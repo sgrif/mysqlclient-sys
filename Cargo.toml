@@ -2,5 +2,7 @@
 name = "mysqlclient-sys"
 version = "0.1.0"
 authors = ["Sean Griffin <sean@seantheprogrammer.com>"]
+build = "build.rs"
 
-[dependencies]
+[build-dependencies]
+pkg-config = "0.3.9"
