@@ -26,6 +26,7 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
         .into_iter()
         .filter(|output| output.status.success())
         .flat_map(|output| String::from_utf8(output.stdout).ok())
+        .map(|output| output.trim().to_string())
         .next()
 }
 
