@@ -12,7 +12,9 @@ fn main() {
     if pkg_config::probe_library("mysqlclient").is_ok() {
         // pkg_config did everything for us
     } else {
-        if let Some(path) = mysql_config_variable("pkglibdir") {
+        let lib_dir = env::var("MYSQLCLIENT_LIB_DIR").ok()
+            .or_else(|| mysql_config_variable("pkglibdir"));
+        if let Some(path) = lib_dir {
             println!("cargo:rustc-link-search=native={}", path);
             println!("cargo:rustc-link-lib=mysqlclient");
         }
@@ -46,8 +48,8 @@ fn generate_bindgen_file() {
 }
 
 fn mysql_include_dir() -> String {
-    pkg_config::get_variable("mysqlclient", "includedir")
-        .ok()
+    env::var("MYSQLCLIENT_INCLUDE_DIR").ok()
+        .or_else(|| pkg_config::get_variable("mysqlclient", "includedir").ok())
         .or_else(|| mysql_config_variable("pkgincludedir"))
         .expect("Unable to locate `mysql.h`")
 }
