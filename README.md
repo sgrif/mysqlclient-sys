@@ -14,8 +14,8 @@ included with the server distribution on Windows). Additionally, either
 
 The build script of the crate will attempt to find the lib path of
 libmysql-client using the following methods:
-
-- First, it will attempt to use pkg-config to locate it. All the config options,
+- First, if the environment variables MYSQLCLIENT_LIB_DIR and MYSQLCLIENT_INCLUDE_DIR are set, it will use their values
+- If the environment variable isn't set, it will attempt to use pkg-config to locate it. All the config options,
   such as `PKG_CONFIG_ALLOW_CROSS`, `PKG_CONFIG_ALL_STATIC` etc., of the crate
   [pkg-config](http://alexcrichton.com/pkg-config-rs/pkg_config/index.html)
   apply.
