@@ -8,12 +8,8 @@ fn main() {
     } else {
         if let Some(path) = mysql_config_variable("pkglibdir") {
             println!("cargo:rustc-link-search=native={}", path);
-            if cfg!(windows) {
-                println!("cargo:rustc-link-lib=static=mysqlclient");
-            } else {
-                println!("cargo:rustc-link-lib=mysqlclient");
-            }
         }
+        println!("cargo:rustc-link-lib=mysqlclient");
     }
 }
 
