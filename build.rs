@@ -13,7 +13,11 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", path);
     }
 
-    println!("cargo:rustc-link-lib=mysqlclient");
+    if cfg!(windows) {
+        println!("cargo:rustc-link-lib=mysql");
+    } else {
+        println!("cargo:rustc-link-lib=mysqlclient");
+    }
 }
 
 fn mysql_config_variable(var_name: &str) -> Option<String> {
