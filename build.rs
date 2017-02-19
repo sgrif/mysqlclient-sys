@@ -1,5 +1,6 @@
 extern crate pkg_config;
 
+use std::env;
 use std::process::Command;
 
 fn main() {
