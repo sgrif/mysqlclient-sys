@@ -15,8 +15,6 @@ fn main() {
 
     if cfg!(all(windows, target_env="gnu")) {
         println!("cargo:rustc-link-lib=dylib=mysql");
-    } else if cfg!(all(windows, target_env="msvc")) {
-        println!("cargo:rustc-link-lib=static=mysqlclient");
     } else {
         println!("cargo:rustc-link-lib=mysqlclient");
     }
