@@ -1,0 +1,31 @@
+environment:
+  matrix:
+    - target: x86_64-pc-windows-gnu
+      MYSQLCLIENT_LIB_DIR: C:\Program Files\MySQL\MySQL Server 5.7\lib
+    - target: x86_64-pc-windows-msvc
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+      MYSQLCLIENT_LIB_DIR: C:\Program Files\MySQL\MySQL Server 5.7\lib
+    - target: x86_64-pc-windows-msvc
+      RUSTFLAGS: -Ctarget-feature=+crt-static
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static
+    - target: x86_64-pc-windows-msvc
+      VCPKG_DEFAULT_TRIPLET: x64-windows
+
+install:
+  - curl -fsS --retry 3 --retry-connrefused -o rustup-init.exe https://win.rustup.rs/
+  # nightly is required for RUSTFLAGS=-Ctarget-feature=+crt-static until Rust 1.19
+  - if not defined RUSTFLAGS rustup-init -y --default-toolchain stable --default-host %target%
+  - if defined RUSTFLAGS rustup-init -y --default-toolchain nightly --default-host %target%
+  - set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+  - rustc -vV
+  - cargo -vV
+  # install vcpkg if required
+  - if defined VCPKG_DEFAULT_TRIPLET git clone https://github.com/Microsoft/vcpkg c:\projects\vcpkg
+  - if defined VCPKG_DEFAULT_TRIPLET c:\projects\vcpkg\bootstrap-vcpkg.bat
+  - if defined VCPKG_DEFAULT_TRIPLET set VCPKG_ROOT=c:\projects\vcpkg
+  - if defined VCPKG_DEFAULT_TRIPLET %VCPKG_ROOT%\vcpkg.exe install libmysql
+
+build: false
+
+test_script:
+  - cargo test
