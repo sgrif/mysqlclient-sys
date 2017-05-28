@@ -1,0 +1,16 @@
+language: rust
+dist: trusty
+rust:
+  - stable
+  - beta
+  - nightly
+os:
+  - linux
+  - osx
+before_script:
+  - pip install 'travis-cargo<0.2' --user
+  - export PATH=$HOME/.local/bin:$PATH
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install mysql-connector-c ; fi
+
+script:
+  - cargo test
