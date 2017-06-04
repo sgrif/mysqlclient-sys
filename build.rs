@@ -1,5 +1,8 @@
 extern crate pkg_config;
 
+#[cfg(target_env = "msvc")]
+extern crate vcpkg;
+
 use std::env;
 use std::process::Command;
 
@@ -7,6 +10,8 @@ fn main() {
     if pkg_config::probe_library("mysqlclient").is_ok() {
         // pkg_config did everything for us
         return
+    } else if try_vcpkg() {
+        return;
     } else if let Ok(path) = env::var("MYSQLCLIENT_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", path);
     } else if let Some(path) = mysql_config_variable("pkglibdir") {
@@ -31,4 +36,24 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
         .flat_map(|output| String::from_utf8(output.stdout).ok())
         .map(|output| output.trim().to_string())
         .next()
+}
+
+#[cfg(target_env = "msvc")]
+fn try_vcpkg() -> bool {
+    if vcpkg::Config::new()
+        .lib_name("mysqlclient")
+        .probe("libmysql")
+        .is_ok() {
+        // found the static library - vcpkg did everything for us
+        return true;
+    } else if vcpkg::probe_package("libmysql").is_ok() {
+        // found the dynamic library - vcpkg did everything for us
+        return true;
+    }
+    false
+}
+
+#[cfg(not(target_env = "msvc"))]
+fn try_vcpkg() -> bool {
+    false
 }
