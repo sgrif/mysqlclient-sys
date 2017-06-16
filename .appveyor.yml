@@ -10,6 +10,7 @@ environment:
       VCPKG_DEFAULT_TRIPLET: x64-windows-static
     - target: x86_64-pc-windows-msvc
       VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKGRS_DYNAMIC: 1
 
 install:
   - curl -fsS --retry 3 --retry-connrefused -o rustup-init.exe https://win.rustup.rs/
