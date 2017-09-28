@@ -18,10 +18,12 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", path);
     }
 
-    if cfg!(all(windows, target_env="gnu")) {
+    if cfg!(all(windows, target_env = "gnu")) {
         println!("cargo:rustc-link-lib=dylib=mysql");
-    } else if cfg!(all(windows, target_env="msvc")) {
+    } else if cfg!(all(windows, target_env = "msvc")) {
         println!("cargo:rustc-link-lib=static=mysqlclient");
+    } else if mysql_config_libs() {
+        return;
     } else {
         println!("cargo:rustc-link-lib=mysqlclient");
     }
@@ -55,5 +57,27 @@ fn try_vcpkg() -> bool {
 
 #[cfg(not(target_env = "msvc"))]
 fn try_vcpkg() -> bool {
+    false
+}
+
+fn mysql_config_libs() -> bool {
+    if let Some(output) = Command::new("mysql_config")
+           .arg("--libs")
+           .output()
+           .into_iter()
+           .filter(|output| output.status.success())
+           .flat_map(|output| String::from_utf8(output.stdout).ok())
+           .map(|output| output.trim().to_string())
+           .next() {
+        for arg in output.split_whitespace() {
+            if arg.starts_with("-L") {
+                println!("cargo:rustc-link-search=native={}", &arg[2..]);
+            } else if arg.starts_with("-l") {
+                println!("cargo:rustc-link-lib={}", &arg[2..]);
+            }
+        }
+        return true;
+    }
+
     false
 }
