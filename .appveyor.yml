@@ -10,6 +10,7 @@ environment:
       VCPKG_DEFAULT_TRIPLET: x64-windows-static
     - target: x86_64-pc-windows-msvc
       VCPKG_DEFAULT_TRIPLET: x64-windows
+      VCPKGRS_DYNAMIC: 1
 
 install:
   - curl -fsS --retry 3 --retry-connrefused -o rustup-init.exe https://win.rustup.rs/
@@ -23,6 +24,7 @@ install:
   - if defined VCPKG_DEFAULT_TRIPLET git clone https://github.com/Microsoft/vcpkg c:\projects\vcpkg
   - if defined VCPKG_DEFAULT_TRIPLET c:\projects\vcpkg\bootstrap-vcpkg.bat
   - if defined VCPKG_DEFAULT_TRIPLET set VCPKG_ROOT=c:\projects\vcpkg
+  - if defined VCPKG_DEFAULT_TRIPLET echo yes > %VCPKG_ROOT%\Downloads\AlwaysAllowDownloads  
   - if defined VCPKG_DEFAULT_TRIPLET %VCPKG_ROOT%\vcpkg.exe install libmysql
 
 build: false

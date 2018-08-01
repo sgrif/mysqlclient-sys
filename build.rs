@@ -11,6 +11,7 @@ fn main() {
         // pkg_config did everything for us
         return
     } else if try_vcpkg() {
+        // vcpkg did everything for us
         return;
     } else if let Ok(path) = env::var("MYSQLCLIENT_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", path);
@@ -40,17 +41,7 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
 
 #[cfg(target_env = "msvc")]
 fn try_vcpkg() -> bool {
-    if vcpkg::Config::new()
-        .lib_name("mysqlclient")
-        .probe("libmysql")
-        .is_ok() {
-        // found the static library - vcpkg did everything for us
-        return true;
-    } else if vcpkg::probe_package("libmysql").is_ok() {
-        // found the dynamic library - vcpkg did everything for us
-        return true;
-    }
-    false
+    vcpkg::find_package("libmysql").is_ok()
 }
 
 #[cfg(not(target_env = "msvc"))]
