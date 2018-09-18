@@ -3,5 +3,8 @@
 #[cfg(not(windows))]
 include!("bindings_macos.rs");
 
-#[cfg(windows)]
-include!("bindings_windows.rs");
+#[cfg(all(windows, target_arch = "x86_64"))]
+include!("bindings_windows_x86_64.rs");
+
+#[cfg(all(windows, target_arch = "x86"))]
+include!("bindings_windows_x86_32.rs");
