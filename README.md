@@ -21,7 +21,7 @@ libmysql-client using the following methods:
   apply.
 - MSVC ABI builds will then check for a [Vcpkg](https://github.com/Microsoft/vcpkg)
   installation using the [vcpkg cargo build helper](https://github.com/mcgoo/vcpkg-rs).
-  Set the `VCKPG_ROOT` environment variable to point to your Vcpkg installation and
+  Set the `VCPKG_ROOT` environment variable to point to your Vcpkg installation and
   run `vcpkg install libmysql:x64-windows` to install the required libraries.
 - If the library cannot be found using `pkg-config`, it will invoke the command
   `mysql_config --variable=pkglibdir`
