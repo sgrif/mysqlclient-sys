@@ -10,6 +10,9 @@ fn main() {
     if pkg_config::probe_library("mysqlclient").is_ok() {
         // pkg_config did everything for us
         return
+    } else if pkg_config::probe_library("perconaserverclient").is_ok() {
+        // pkg_config did everything for us
+        return
     } else if try_vcpkg() {
         // vcpkg did everything for us
         return;
