@@ -1768,6 +1768,15 @@ pub enum mysql_status {
     MYSQL_STATUS_USE_RESULT = 2,
     MYSQL_STATUS_STATEMENT_GET_RESULT = 3,
 }
+#[repr(i32)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum mysql_ssl_mode {
+    SSL_MODE_DISABLED = 1,
+    SSL_MODE_PREFERRED = 2,
+    SSL_MODE_REQUIRED = 3,
+    SSL_MODE_VERIFY_CA = 4,
+    SSL_MODE_VERIFY_IDENTITY = 5,
+}
 #[repr(C)]
 #[derive(Debug, Copy)]
 pub struct character_set {
