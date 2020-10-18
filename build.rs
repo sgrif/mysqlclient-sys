@@ -19,7 +19,9 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", path);
     }
 
-    if cfg!(all(windows, target_env="gnu")) {
+    if env::var_os("MYSQLCLIENT_STATIC").is_some() {
+        println!("cargo:rustc-link-lib=static=mysqlclient");
+    } else if cfg!(all(windows, target_env="gnu")) {
         println!("cargo:rustc-link-lib=dylib=mysql");
     } else if cfg!(all(windows, target_env="msvc")) {
         println!("cargo:rustc-link-lib=static=mysqlclient");
