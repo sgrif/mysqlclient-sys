@@ -13,19 +13,32 @@ fn main() {
     } else if try_vcpkg() {
         // vcpkg did everything for us
         return;
-    } else if let Ok(path) = env::var("MYSQLCLIENT_LIB_DIR") {
+    } else if let Ok(path) = env_var("MYSQLCLIENT_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", path);
     } else if let Some(path) = mysql_config_variable("pkglibdir") {
         println!("cargo:rustc-link-search=native={}", path);
     }
 
-    if cfg!(all(windows, target_env="gnu")) {
-        println!("cargo:rustc-link-lib=dylib=mysql");
-    } else if cfg!(all(windows, target_env="msvc")) {
-        println!("cargo:rustc-link-lib=static=mysqlclient");
+    if env_var("MYSQLCLIENT_LIB_STATIC").is_ok() {
+        if cfg!(all(windows, target_env="gnu")) {
+            println!("cargo:rustc-link-lib=static=mysql");
+        } else {
+            println!("cargo:rustc-link-lib=static=mysqlclient");
+        }
     } else {
-        println!("cargo:rustc-link-lib=mysqlclient");
+        if cfg!(all(windows, target_env="gnu")) {
+            println!("cargo:rustc-link-lib=dylib=mysql");
+        } else if cfg!(all(windows, target_env="msvc")) {
+            println!("cargo:rustc-link-lib=static=mysqlclient");
+        } else {
+            println!("cargo:rustc-link-lib=mysqlclient");
+        }
     }
+}
+
+fn env_var(name: &str) -> Result<String, env::VarError> {
+    println!("cargo:rerun-if-env-changed={}", name);
+    env::var(name)
 }
 
 fn mysql_config_variable(var_name: &str) -> Option<String> {
