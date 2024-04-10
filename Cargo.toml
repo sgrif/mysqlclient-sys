@@ -1,6 +1,6 @@
 [package]
 name = "mysqlclient-sys"
-version = "0.2.5"
+version = "0.2.6"
 authors = ["Sean Griffin <sean@seantheprogrammer.com>"]
 description = "Auto-generated rust bindings for libmysqlclient"
 license = "MIT OR Apache-2.0"
@@ -16,3 +16,4 @@ vcpkg = "0.2.4"
 
 [features]
 default = []
+buildtime_bindgen = ["dep:bindgen"]
