@@ -102,7 +102,7 @@ mod tests {
                 .to_string()
         };
 
-        let (version_id, is_mysql, is_mariadb) = helper::get_libmysql_version_id(include_dir);
+        let (version_id, _, _) = helper::get_libmysql_version_id(include_dir);
         assert!(0 != version_id, "Invalid MySQL Version ID");
     }
 }

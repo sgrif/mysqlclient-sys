@@ -3,6 +3,8 @@ extern crate pkg_config;
 #[cfg(target_env = "msvc")]
 extern crate vcpkg;
 
+use std::env;
+#[allow(unused_imports)]
 use std::path::PathBuf;
 
 include!("./src/helper.rs");
