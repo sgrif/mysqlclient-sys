@@ -94,6 +94,7 @@ fn try_vcpkg() -> bool {
     false
 }
 
+#[allow(unused_variables)]
 fn autogen_bindings(lib_dir: String, include_dir: String) {
     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search={}", lib_dir);

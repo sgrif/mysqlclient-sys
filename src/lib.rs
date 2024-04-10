@@ -13,6 +13,7 @@ include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
 mod helper;
 
+#[allow(unused_imports)]
 use std::env;
 
 // MySQL 8.0.1 Remove my_bool
