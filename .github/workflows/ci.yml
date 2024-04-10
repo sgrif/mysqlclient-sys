@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, macos-14] #, windows-2019] (windows fails for now)
-        features: [default]
+        features: [default, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
