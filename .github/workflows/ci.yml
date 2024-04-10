@@ -1,0 +1,119 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
+
+name: CI Tests
+
+jobs:
+  check_and_test:
+    name: Check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, macos-14] #, windows-2019] (windows fails for now)
+        features: [default]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
+          echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
+
+      - name: Install mysql (Linux)
+        if: runner.os == 'Linux' && matrix.features != 'bundled'
+        run: |
+          sudo systemctl start mysql.service
+          sudo apt-get update
+          sudo apt-get -y install libmysqlclient-dev
+          mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'root'@'localhost';" -uroot -proot
+          echo "MYSQL_DATABASE_URL=mysql://root:root@localhost/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://root:root@localhost/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://root:root@localhost/diesel_unit_test" >> $GITHUB_ENV
+
+      - name: Install mysql (MacOS)
+        if: matrix.os == 'macos-latest' && matrix.features != 'bundled'
+        run: |
+          brew install mariadb@10.5
+          /usr/local/opt/mariadb@10.5/bin/mysql_install_db
+          /usr/local/opt/mariadb@10.5/bin/mysql.server start
+          sleep 3
+          /usr/local/opt/mariadb@10.5/bin/mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
+          echo "MYSQL_DATABASE_URL=mysql://runner@localhost/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://runner@localhost/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://runner@localhost/diesel_unit_test" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=/usr/local/opt/mariadb@10.5/lib" >> $GITHUB_ENV
+
+      - name: Install mysql (MacOS M1)
+        if: matrix.os == 'macos-14' && matrix.features != 'bundled'
+        run: |
+          brew install mariadb@10.5
+          ls /opt/homebrew/opt/mariadb@10.5
+          /opt/homebrew/opt/mariadb@10.5/bin/mysql_install_db
+          /opt/homebrew/opt/mariadb@10.5/bin/mysql.server start
+          sleep 3
+          /opt/homebrew/opt/mariadb@10.5/bin/mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
+          echo "MYSQL_DATABASE_URL=mysql://runner@localhost/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://runner@localhost/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://runner@localhost/diesel_unit_test" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mariadb@10.5/lib" >> $GITHUB_ENV
+
+      - name: Install mysql (Windows)
+        if: runner.os == 'Windows' && matrix.features != 'bundled'
+        shell: cmd
+        run: |
+          choco install mysql
+          "C:\tools\mysql\current\bin\mysql" -e "create database diesel_test; create database diesel_unit_test; grant all on `diesel_%`.* to 'root'@'localhost';" -uroot
+
+      - name: Set variables for mysql (Windows)
+        if: runner.os == 'Windows' && matrix.bundled != 'boundled'
+        shell: bash
+        run: |
+          echo "MYSQL_DATABASE_URL=mysql://root@localhost/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://root@localhost/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://root@localhost/diesel_unit_test" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=C:\tools\mysql\current\lib" >> $GITHUB_ENV
+          echo "C:\tools\mysql\current\lib" >> $GITHUB_PATH
+          echo "C:\tools\mysql\current\bin" >> $GITHUB_PATH
+          dir "C:\tools\mysql\current\lib"
+
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check
+        shell: bash
+        run: |
+          cargo check --no-default-features --features "${{ matrix.features }}"
+
+      - name: Tests
+        shell: bash
+        run: |
+          cargo test --no-default-features --features "${{ matrix.features }}"
+
+      - name: Test compile diesel
+        shell: bash
+        run: |
+          cargo new test_diesel
+          cd test_diesel
+          echo "[workspace]" >> Cargo.toml
+          cargo add diesel --no-default-features --features "mysql"
+          cargo add mysqlclient-sys
+          echo "[patch.crates-io]" >> Cargo.toml
+          echo "mysqlclient-sys = { path = \"..\" }" >> Cargo.toml
+          cat Cargo.toml
+          echo "use diesel::prelude::*;" > src/main.rs
+          echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
+          cargo build --features "mysqlclient-sys/${{ matrix.features }}"
