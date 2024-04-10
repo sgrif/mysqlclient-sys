@@ -13,9 +13,10 @@ fn main() {
     let include_dir = if env::var("MYSQLCLIENT_INCLUDE_DIR").is_ok() {
         env::var("MYSQLCLIENT_INCLUDE_DIR").unwrap()
     } else {
-        mysql_config_variable("pkgincludedir")
-            .expect("fail to find mysql config variable")
-            .to_string()
+        match mysql_config_variable("pkgincludedir") {
+            None => "".to_string(),
+            Some(var_value) => var_value,
+        }
     };
 
     let (version_id, is_mysql, is_mariadb) = get_libmysql_version_id(include_dir.clone());
@@ -49,18 +50,18 @@ fn main() {
     }
 
     if use_rust_bindgen {
-        println!("cargo::rustc-cfg=UseRustBindgen");
-
         let lib_dir = if env::var("MYSQLCLIENT_LIB_DIR").is_ok() {
             env::var("MYSQLCLIENT_LIB_DIR").unwrap()
         } else {
-            mysql_config_variable("pkglibdir")
-                .expect("fail to find mysql config variable")
-                .to_string()
+            match mysql_config_variable("pkglibdir") {
+                None => "".to_string(),
+                Some(var_value) => var_value,
+            }
         };
 
-        autogen_bindings(lib_dir, include_dir);
-        return;
+        if autogen_bindings(lib_dir, include_dir) == 0 {
+            return;
+        }
     }
 
     if pkg_config::probe_library("mysqlclient").is_ok() {
@@ -95,7 +96,13 @@ fn try_vcpkg() -> bool {
 }
 
 #[allow(unused_variables)]
-fn autogen_bindings(lib_dir: String, include_dir: String) {
+fn autogen_bindings(lib_dir: String, include_dir: String) -> i32 {
+    if lib_dir == "" || include_dir == "" {
+        return -1;
+    }
+
+    println!("cargo::rustc-cfg=UseRustBindgen");
+
     // Tell cargo to look for shared libraries in the specified directory
     println!("cargo:rustc-link-search={}", lib_dir);
 
@@ -136,4 +143,6 @@ fn autogen_bindings(lib_dir: String, include_dir: String) {
             .write_to_file(out_path.join("bindings.rs"))
             .expect("Couldn't write bindings!");
     }
+
+    0
 }

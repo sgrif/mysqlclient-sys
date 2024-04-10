@@ -98,12 +98,15 @@ mod tests {
         let include_dir = if env::var("MYSQLCLIENT_INCLUDE_DIR").is_ok() {
             env::var("MYSQLCLIENT_INCLUDE_DIR").unwrap()
         } else {
-            helper::mysql_config_variable("pkgincludedir")
-                .expect("fail to find mysql config variable")
-                .to_string()
+            match helper::mysql_config_variable("pkgincludedir") {
+                None => "".to_string(),
+                Some(var_value) => var_value,
+            }
         };
 
-        let (version_id, _, _) = helper::get_libmysql_version_id(include_dir);
-        assert!(0 != version_id, "Invalid MySQL Version ID");
+        let (version_id, is_mysql, is_mariadb) = helper::get_libmysql_version_id(include_dir);
+        if 0 == version_id {
+            assert!(0 == version_id && false == is_mysql && false == is_mariadb, "Invalid MySQL Version ID");
+        }
     }
 }
