@@ -1,0 +1,3 @@
+[submodule "mysqlclient-src/source"]
+	path = mysqlclient-src/source
+	url = https://github.com/weiznich/mysql-server/

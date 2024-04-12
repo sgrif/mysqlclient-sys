@@ -1,0 +1,61 @@
+[package]
+name = "mysqlclient-src"
+version = "0.1.0"
+edition = "2021"
+build = "build.rs"
+include = [
+   "/build.rs",
+   "/src",
+   "/source/CMakeLists.txt",
+   "/source/config.h.cmake",
+   "/source/configure.cmake",
+   "/source/cmake",
+   "/source/include",
+   "/source/MYSQL_VERSION",
+   "/source/extra/libbacktrace",
+   "/source/extra/zlib",
+   "/source/extra/zstd",
+   "/source/extra/libevent",
+   "/source/extra/lz4",
+   "/source/extra/rapidjson",
+   "/source/extra/libedit",
+   "/source/extra/libcno",
+   "/source/strings",
+   "/source/vio",
+   "/source/mysys",
+   "/source/libmysql",
+   "/source/mysql",
+   "/source/libchangestreams",
+   "/source/storage/ndb/cmake",
+   "/source/storage/ndb/CMakeLists.txt",
+   "/source/share",
+   "/source/libservices",
+   "/source/utilities",
+   "/source/client",
+   "/source/components/libminchassis",
+   "/source/router/src/harness/include",
+   "/source/sql/",
+   "/source/sql-common/",
+   "/source/libs/mysql",
+   "/source/man",
+   "/source/scripts/mysqlclient.pc.in",
+   "/source/scripts/mysql_config.sh",
+   "/source/scripts/mysqldumpslow.pl.in",
+   "/source/scripts/mysqld_multi.pl.in",
+   "/source/scripts/mysqld_safe.sh",
+   "/source/scripts/comp_sql.cc",
+   "/source/scripts/CMakeLists.txt",
+   "/source/scripts/sys_schema/CMakeLists.txt",
+   "/source/packaging/WiX",
+   "/source/README",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+cmake = "0.1"
+
+[dependencies]
+link-cplusplus = "1.0"
+openssl-sys = { version = "0.9.93", features = ["vendored"] }
+openssl-src = "300.0.0"
