@@ -35,15 +35,25 @@ fn parse_version_id(path: String, substr: &str) -> u32 {
 }
 
 #[allow(dead_code)]
-pub fn mysql_config_variable(var_name: &str) -> Option<String> {
-    Command::new("mysql_config")
-        .arg(format!("--variable={}", var_name))
+pub fn mysql_config(arg: &str, var_name: &str) -> Option<String> {
+    let cmd_arg = if arg == "variable" {
+        format!("--variable={}", var_name)
+    } else {
+        format!("--{arg}")
+    };
+    return Command::new("mysql_config")
+        .arg(format!("{cmd_arg}"))
         .output()
         .into_iter()
         .filter(|output| output.status.success())
         .flat_map(|output| String::from_utf8(output.stdout).ok())
         .map(|output| output.trim().to_string())
-        .next()
+        .next();
+}
+
+#[allow(dead_code)]
+pub fn mysql_config_variable(var_name: &str) -> Option<String> {
+    return mysql_config("variable", var_name);
 }
 
 #[allow(dead_code)]

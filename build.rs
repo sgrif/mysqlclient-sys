@@ -38,32 +38,6 @@ fn main() {
         use_rust_bindgen = false;
     }
 
-    if env::var("USE_RUST_BINDGEN").is_ok() {
-        use_rust_bindgen = match env::var("USE_RUST_BINDGEN").unwrap().as_str() {
-            "true" => true,
-            "1" => true,
-            "" => true,
-            "false" => false,
-            "0" => false,
-            _ => false,
-        }
-    }
-
-    if use_rust_bindgen {
-        let lib_dir = if env::var("MYSQLCLIENT_LIB_DIR").is_ok() {
-            env::var("MYSQLCLIENT_LIB_DIR").unwrap()
-        } else {
-            match mysql_config_variable("pkglibdir") {
-                None => "".to_string(),
-                Some(var_value) => var_value,
-            }
-        };
-
-        if autogen_bindings(lib_dir, include_dir) == 0 {
-            return;
-        }
-    }
-
     if pkg_config::probe_library("mysqlclient").is_ok() {
         // pkg_config did everything for us
         return;
@@ -82,6 +56,21 @@ fn main() {
         println!("cargo:rustc-link-lib=static=mysqlclient");
     } else {
         println!("cargo:rustc-link-lib=mysqlclient");
+    }
+
+    if use_rust_bindgen {
+        let lib_dir = if env::var("MYSQLCLIENT_LIB_DIR").is_ok() {
+            env::var("MYSQLCLIENT_LIB_DIR").unwrap()
+        } else {
+            match mysql_config_variable("pkglibdir") {
+                None => "".to_string(),
+                Some(var_value) => var_value,
+            }
+        };
+
+        if autogen_bindings(lib_dir, include_dir) == 0 {
+            return;
+        }
     }
 }
 

@@ -106,7 +106,18 @@ mod tests {
 
         let (version_id, is_mysql, is_mariadb) = helper::get_libmysql_version_id(include_dir);
         if 0 == version_id {
-            assert!(0 == version_id && false == is_mysql && false == is_mariadb, "Invalid MySQL Version ID");
+            assert!(
+                0 == version_id && false == is_mysql && false == is_mariadb,
+                "Invalid MySQL Version ID"
+            );
+        }
+
+        let version_str = match helper::mysql_config("version", "") {
+            None => "".to_string(),
+            Some(var_value) => var_value,
+        };
+        if is_mariadb {
+            assert!(version_str.starts_with("11"));
         }
     }
 }
