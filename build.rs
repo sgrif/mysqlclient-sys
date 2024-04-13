@@ -111,6 +111,13 @@ fn autogen_bindings(lib_dir: String, include_dir: String) -> i32 {
             .blocklist_type("my_bool")
             .blocklist_type("mysql_ssl_mode")
             .blocklist_type("mysql_option")
+            // Do not generate any bindings for the given function.
+            .blocklist_function("strtold")
+            .blocklist_function("qecvt")
+            .blocklist_function("qfcvt")
+            .blocklist_function("qgcvt")
+            .blocklist_function("qecvt_r")
+            .blocklist_function("qfcvt_r")
             // Tell cargo to invalidate the built crate whenever any of the
             // included header files changed.
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
