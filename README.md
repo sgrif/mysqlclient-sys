@@ -23,15 +23,12 @@ libmysql-client using the following methods:
   installation using the [vcpkg cargo build helper](https://github.com/mcgoo/vcpkg-rs).
   Set the `VCKPG_ROOT` environment variable to point to your Vcpkg installation and
   run `vcpkg install libmysql:x64-windows` to install the required libraries.
+- If the library cannot be found by using the steps above the build script will 
+  check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables
 - If the library cannot be found using `pkg-config`, it will invoke the command
   `mysql_config --variable=pkglibdir`
 
-The bindings will be generated against the headers present on your system at
-compile time. We will attempt to determine the include directory by using the
-output of the first command in this list to return successfully:
-
-- `pkg-config --variable=includedir mysqlclient`
-- `mysql_config --variable=pkgincludedir`
+The crate will try to use pregenerated bindings for a variety of libmysqlclient versions and supported operating systems.
 
 ## License
 
