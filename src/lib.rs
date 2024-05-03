@@ -3,6 +3,7 @@
 #[allow(dead_code)]
 mod bindings {
     #[cfg(all(
+        not(feature = "buildtime_bindgen"),
         mysql_5_7_x,
         not(target_os = "windows"),
         any(target_arch = "x86_64", target_arch = "aarch64")
@@ -10,6 +11,7 @@ mod bindings {
     include!("../bindings/bindings_5_7_42_x86_64_linux.rs");
 
     #[cfg(all(
+        not(feature = "buildtime_bindgen"),
         mysql_8_0_x,
         not(target_os = "windows"),
         any(target_arch = "x86_64", target_arch = "aarch64")
@@ -17,6 +19,7 @@ mod bindings {
     include!("../bindings/bindings_8_0_36_x86_64_linux.rs");
 
     #[cfg(all(
+        not(feature = "buildtime_bindgen"),
         mysql_8_3_x,
         not(target_os = "windows"),
         any(target_arch = "x86_64", target_arch = "aarch64")
@@ -24,29 +27,63 @@ mod bindings {
     include!("../bindings/bindings_8_3_0_x86_64_linux.rs");
 
     #[cfg(all(
+        not(feature = "buildtime_bindgen"),
         mariadb_10_x,
         not(target_os = "windows"),
         any(target_arch = "x86_64", target_arch = "aarch64")
     ))]
     include!("../bindings/bindings_mariadb_10_11_x86_64_linux.rs");
 
-    #[cfg(all(mysql_8_0_x, target_os = "windows", target_arch = "x86_64"))]
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_0_x,
+        target_os = "windows",
+        target_arch = "x86_64"
+    ))]
     include!("../bindings/bindings_8_0_36_x86_64_windows.rs");
 
-    #[cfg(all(mysql_8_0_x, target_os = "windows", target_arch = "x86"))]
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_0_x,
+        target_os = "windows",
+        target_arch = "x86"
+    ))]
     include!("../bindings/bindings_8_0_36_i868_windows.rs");
 
-    #[cfg(all(mysql_8_3_x, target_os = "windows", target_arch = "x86_64"))]
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_3_x,
+        target_os = "windows",
+        target_arch = "x86_64"
+    ))]
     include!("../bindings/bindings_8_3_0_x86_64_windows.rs");
 
-    #[cfg(all(mysql_8_3_x, target_os = "windows", target_arch = "x86"))]
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_3_x,
+        target_os = "windows",
+        target_arch = "x86"
+    ))]
     include!("../bindings/bindings_8_3_0_i868_windows.rs");
 
-    #[cfg(all(mariadb_10_x, target_os = "windows", target_arch = "x86_64"))]
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mariadb_10_x,
+        target_os = "windows",
+        target_arch = "x86_64"
+    ))]
     include!("../bindings/bindings_mariadb_10_11_x86_64_windows.rs");
 
-    #[cfg(all(mariadb_10_x, target_os = "windows", target_arch = "x86"))]
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mariadb_10_x,
+        target_os = "windows",
+        target_arch = "x86"
+    ))]
     include!("../bindings/bindings_mariadb_10_11_i686_windows.rs");
+
+    #[cfg(feature = "buildtime_bindgen")]
+    include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
 
 pub use self::bindings::*;

@@ -2,6 +2,9 @@ use std::env;
 use std::process::Command;
 
 fn main() {
+    if cfg!(feature = "buildtime_bindgen") {
+        autogen_bindings();
+    }
     let target = std::env::var("TARGET")
         .expect("Set by cargo")
         .to_ascii_uppercase()
@@ -139,6 +142,7 @@ fn parse_version(version: &str) {
     } else if version.starts_with("10.") || version.starts_with("11.") {
         println!("cargo:rustc-cfg=mariadb_10_x");
     } else {
+        #[cfg(not(feature = "buildtime_bindgen"))]
         panic!(
             "mysqlclient-sys does not provide bundled bindings for libmysqlclient {version}. \
              Consider using the `buildtime_bindgen` feature or \
@@ -155,4 +159,38 @@ fn try_vcpkg() -> bool {
 #[cfg(not(target_env = "msvc"))]
 fn try_vcpkg() -> bool {
     false
+}
+
+#[cfg(not(feature = "buildtime_bindgen"))]
+fn autogen_bindings() {}
+
+#[cfg(feature = "buildtime_bindgen")]
+fn autogen_bindings() {
+    // if you update the options here you also need to
+    // update the bindgen command in `DEVELOPMENT.md`
+    // and regenerate the bundled bindings with the new options
+    let bindings = bindgen::Builder::default()
+        // The input header we would like to generate
+        // bindings for.
+        .header("bindings/wrapper.h")
+        .allowlist_function("mysql.*")
+        .allowlist_type("MYSQL.*")
+        .allowlist_type("mysql.*")
+        .allowlist_var("MYSQL.*")
+        .default_enum_style(bindgen::EnumVariation::Rust {
+            non_exhaustive: true,
+        })
+        // Tell cargo to invalidate the built crate whenever any of the
+        // included header files changed.
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        // Finish the builder and generate the bindings.
+        .generate()
+        // Unwrap the Result and panic on failure.
+        .expect("Unable to generate bindings");
+
+    // Write the bindings to the $OUT_DIR/bindings.rs file.
+    let out_path = std::path::PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
 }
