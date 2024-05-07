@@ -82,7 +82,7 @@ jobs:
           unzip library.zip
 
       - name: Set variables for mysql (Windows)
-        if: runner.os == 'Windows' && matrix.bundled != 'boundled'
+        if: runner.os == 'Windows' && matrix.bundled != 'bundled'
         shell: bash
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.3.0-winx64/lib/" >> $GITHUB_ENV
