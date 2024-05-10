@@ -1,4 +1,6 @@
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
+#[cfg(feature = "bundled")]
+extern crate mysqlclient_src;
 
 #[allow(dead_code)]
 mod bindings {
@@ -25,6 +27,14 @@ mod bindings {
         any(target_arch = "x86_64", target_arch = "aarch64")
     ))]
     include!("../bindings/bindings_8_3_0_x86_64_linux.rs");
+
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_4_x,
+        not(target_os = "windows"),
+        any(target_arch = "x86_64", target_arch = "aarch64")
+    ))]
+    include!("../bindings/bindings_8_4_0_x86_64_linux.rs");
 
     #[cfg(all(
         not(feature = "buildtime_bindgen"),
@@ -65,6 +75,22 @@ mod bindings {
         target_arch = "x86"
     ))]
     include!("../bindings/bindings_8_3_0_i868_windows.rs");
+
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_4_x,
+        target_os = "windows",
+        target_arch = "x86_64"
+    ))]
+    include!("../bindings/bindings_8_4_0_x86_64_windows.rs");
+
+    #[cfg(all(
+        not(feature = "buildtime_bindgen"),
+        mysql_8_4_x,
+        target_os = "windows",
+        target_arch = "x86"
+    ))]
+    include!("../bindings/bindings_8_4_0_i868_windows.rs");
 
     #[cfg(all(
         not(feature = "buildtime_bindgen"),

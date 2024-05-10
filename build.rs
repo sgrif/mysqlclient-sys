@@ -2,6 +2,10 @@ use std::env;
 use std::process::Command;
 
 fn main() {
+    if cfg!(feature = "bundled") {
+        parse_version("8.4.0");
+        return;
+    }
     if cfg!(feature = "buildtime_bindgen") {
         autogen_bindings();
     }
@@ -125,6 +129,7 @@ fn parse_version(version: &str) {
     // libmysqlclient20 -> 5.7.x
     // libmysqlclient21 -> 8.0.x
     // libmysqlclient23 -> 8.3.0
+    // libmysqlclient24 -> 8.4.0
     if version.starts_with("5.7.") || version.starts_with("20.") {
         if std::env::var("CARGO_CFG_WINDOWS").is_ok() {
             panic!(
@@ -139,6 +144,8 @@ fn parse_version(version: &str) {
         println!("cargo:rustc-cfg=mysql_8_0_x");
     } else if version.starts_with("8.3.") || version.starts_with("23.") {
         println!("cargo:rustc-cfg=mysql_8_3_x");
+    } else if version.starts_with("8.4.") || version.starts_with("24.") {
+        println!("cargo:rustc-cfg=mysql_8_4_x");
     } else if version.starts_with("10.") || version.starts_with("11.") {
         println!("cargo:rustc-cfg=mariadb_10_x");
     } else {
