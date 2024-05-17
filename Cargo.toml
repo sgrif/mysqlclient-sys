@@ -1,20 +1,22 @@
 [package]
 name = "mysqlclient-sys"
-version = "0.2.5"
-authors = ["Sean Griffin <sean@seantheprogrammer.com>"]
+version = "0.3.0"
 description = "Auto-generated rust bindings for libmysqlclient"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/mysqlclient-sys"
+documentation = "https://docs.rs/mysqlclient-sys"
 build = "build.rs"
 links = "mysqlclient"
 edition = "2021"
+keywords = ["bindings", "libmysqlclient", "mysqlclient-sys"]
+categories = ["database", "external-ffi-bindings"]
 
 [build-dependencies]
 pkg-config = "0.3.9"
 bindgen = { version = "0.69.4", optional = true }
 
 [dependencies]
-mysqlclient-src = { path = "mysqlclient-src", optional = true }
+mysqlclient-src = { version = "0.1.0", path = "mysqlclient-src", optional = true }
 
 [target.'cfg(target_env = "msvc")'.build-dependencies]
 vcpkg = "0.2.4"
