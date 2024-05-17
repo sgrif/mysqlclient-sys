@@ -125,6 +125,11 @@ fn parse_version(version: &str) {
             std::env::var("TARGET").expect("Set by cargo")
         );
     }
+    println!("cargo::rustc-check-cfg=cfg(mysql_5_7_x)");
+    println!("cargo::rustc-check-cfg=cfg(mysql_8_0_x)");
+    println!("cargo::rustc-check-cfg=cfg(mysql_8_3_x)");
+    println!("cargo::rustc-check-cfg=cfg(mysql_8_4_x)");
+    println!("cargo::rustc-check-cfg=cfg(mariadb_10_x)");
     // ubuntu/debian packages use the following package versions:
     // libmysqlclient20 -> 5.7.x
     // libmysqlclient21 -> 8.0.x
