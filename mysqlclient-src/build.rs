@@ -1,5 +1,3 @@
-use cmake;
-
 fn main() {
     let openssl_dir = std::env::var("DEP_OPENSSL_ROOT").unwrap();
 
@@ -9,6 +7,10 @@ fn main() {
         .define("WITHOUT_SERVER", "ON")
         .define("WITH_SSL", openssl_dir)
         .build_target("mysqlclient");
+
+    if cfg!(feature = "with-asan") {
+        config.define("WITH_ASAN", "ON");
+    }
 
     if std::env::var("CARGO_CFG_TARGET_ENV").as_deref() == Ok("msvc") {
         // rust links the release MVSC runtime
