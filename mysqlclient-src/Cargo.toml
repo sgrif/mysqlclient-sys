@@ -3,6 +3,14 @@ name = "mysqlclient-src"
 version = "0.1.0"
 edition = "2021"
 build = "build.rs"
+description = "Bundled version of libmysqlclient"
+license = "GPL-2.0"
+documentation = "https://docs.rs/mysqlclient-src/"
+repository = "https://github.com/sgrif/mysqlclient-sys"
+links = "mysqlclient_sys_src"
+keywords = ["bindings", "libmysqlclient", "mysqlclient-sys", "bundled"]
+categories = ["database", "external-ffi-bindings"]
+
 include = [
    "/build.rs",
    "/src",
