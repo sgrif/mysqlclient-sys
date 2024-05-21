@@ -6,6 +6,7 @@ fn main() {
     config
         .define("WITHOUT_SERVER", "ON")
         .define("WITH_SSL", openssl_dir)
+        .define("WITH_EDITLINE", "bundled")
         .build_target("mysqlclient");
 
     if cfg!(feature = "with-asan") {
