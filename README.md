@@ -41,6 +41,9 @@ Licensed under either of
 
 at your option.
 
+The `mysqlclient-src` crate is licensed under [GPL-2.0](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+to match the license of the packed mysql source code.
+
 ### Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
