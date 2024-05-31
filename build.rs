@@ -135,6 +135,7 @@ fn parse_version(version: &str) {
     // libmysqlclient21 -> 8.0.x
     // libmysqlclient23 -> 8.3.0
     // libmysqlclient24 -> 8.4.0
+    // libmariadb-dev 3.3.8 -> mariadb 10.x
     if version.starts_with("5.7.") || version.starts_with("20.") {
         if std::env::var("CARGO_CFG_WINDOWS").is_ok() {
             panic!(
@@ -151,7 +152,8 @@ fn parse_version(version: &str) {
         println!("cargo:rustc-cfg=mysql_8_3_x");
     } else if version.starts_with("8.4.") || version.starts_with("24.") {
         println!("cargo:rustc-cfg=mysql_8_4_x");
-    } else if version.starts_with("10.") || version.starts_with("11.") {
+    } else if version.starts_with("10.") || version.starts_with("11.") || version.starts_with("3.")
+    {
         println!("cargo:rustc-cfg=mariadb_10_x");
     } else {
         #[cfg(not(feature = "buildtime_bindgen"))]
