@@ -7,9 +7,9 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ### Changed
 
-* Include a notice in the readme that the mysqlclient-src crate is licenced under GPL-v2
+* Include a notice in the README that the mysqlclient-src crate is licence under GPL-v2
 * Excluded more files from the mysql source code to minimize the size of mysqlclient-src
-* Included the debian/ubuntu version specifier for libmariadb-dev to fix selecting the right bindings in the offical rust docker images
+* Included the debian/ubuntu version specifier for libmariadb-dev to fix selecting the right bindings in the official rust docker images
 
 ## [0.3.0] 2024-05-17
 
