@@ -167,7 +167,12 @@ fn parse_version(version: &str) {
 
 #[cfg(target_env = "msvc")]
 fn try_vcpkg() -> bool {
-    vcpkg::find_package("libmysql").is_ok()
+    if vcpkg::find_package("libmariadb").is_ok() {
+        return true;
+    } else if vcpkg::find_package("libmysql").is_ok() {
+        return true;
+    }
+    false
 }
 
 #[cfg(not(target_env = "msvc"))]
