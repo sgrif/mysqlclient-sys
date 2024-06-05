@@ -8,8 +8,8 @@ on:
 name: CI Tests
 
 jobs:
-  check_and_test:
-    name: Check
+  check_and_test_mysql:
+    name: Check MySQL
     strategy:
       fail-fast: false
       matrix:
