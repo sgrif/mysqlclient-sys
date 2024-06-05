@@ -57,22 +57,20 @@ jobs:
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/local/opt/mysql@8.0/include" >> $GITHUB_ENV
           ls /usr/local/opt/mysql@8.0/include/mysql
 
-      - name: Install mysql (MacOS M1)
+      - name: Install MySQL (MacOS M1)
         if: matrix.os == 'macos-14' && matrix.features != 'bundled'
         run: |
-          brew install mariadb@10.5
-          ls /opt/homebrew/opt/mariadb@10.5
-          /opt/homebrew/opt/mariadb@10.5/bin/mysql_install_db
-          /opt/homebrew/opt/mariadb@10.5/bin/mysql.server start
+          brew install mysql@8.3
+          brew services start mysql@8.3
           sleep 3
-          /opt/homebrew/opt/mariadb@10.5/bin/mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
+          /opt/homebrew/opt/mysql@8.3/bin/mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
           echo "MYSQL_DATABASE_URL=mysql://runner@localhost/diesel_test" >> $GITHUB_ENV
           echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://runner@localhost/diesel_example" >> $GITHUB_ENV
           echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://runner@localhost/diesel_unit_test" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mariadb@10.5/lib" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I/opt/homebrew/opt/mariadb@10.5/include" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_VERSION=10.5" >> $GITHUB_ENV
-          ls /opt/homebrew/opt/mariadb@10.5/include/mysql
+          echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mysql@8.3/lib" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I/opt/homebrew/opt/mysql@8.3/include" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=8.3" >> $GITHUB_ENV
+          ls /opt/homebrew/opt/mysql@8.3/include/mysql
 
       - name: Install mysql (Windows)
         if: runner.os == 'Windows' && matrix.features != 'bundled'
