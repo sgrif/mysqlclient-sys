@@ -32,7 +32,7 @@ jobs:
           echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
           echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
 
-      - name: Install mysql (Linux)
+      - name: Install MySQL (Linux)
         if: runner.os == 'Linux' && matrix.features != 'bundled'
         run: |
           sudo systemctl start mysql.service
