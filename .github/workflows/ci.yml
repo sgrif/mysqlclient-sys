@@ -72,24 +72,24 @@ jobs:
           echo "MYSQLCLIENT_VERSION=8.3" >> $GITHUB_ENV
           ls /opt/homebrew/opt/mysql@8.3/include/mysql
 
-      - name: Install mysql (Windows)
+      - name: Install MySQL (Windows)
         if: runner.os == 'Windows' && matrix.features != 'bundled'
         shell: cmd
         run: |
-          curl -L https://dev.mysql.com/get/Downloads/MySQL-8.3/mysql-8.3.0-winx64.zip -o library.zip
+          curl -L https://dev.mysql.com/get/Downloads/MySQL-8.4/mysql-8.4.0-winx64.zip -o library.zip
           unzip library.zip
 
       - name: Set variables for mysql (Windows)
         if: runner.os == 'Windows' && matrix.features != 'bundled'
         shell: bash
         run: |
-          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.3.0-winx64/lib/" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_VERSION=8.3.0" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.4.0-winx64/lib/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=8.4.0" >> $GITHUB_ENV
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I./include" >> $GITHUB_ENV
           mkdir include
-          cp ./mysql-8.3.0-winx64/include include/mysql -r
+          cp ./mysql-8.4.0-winx64/include include/mysql -r
           dir ./include/mysql
-          dir ./mysql-8.3.0-winx64/lib
+          dir ./mysql-8.4.0-winx64/lib
 
       - name: Windows setup (bundled)
         if: runner.os == 'Windows' && matrix.features == 'bundled'
