@@ -31,7 +31,7 @@ fn main() {
         // pkg_config did everything but the version flags for us
         parse_version(&lib.version);
         return;
-    } else if let Ok(lib) = pkg_config::probe_library("mariadb") {
+    } else if let Ok(lib) = pkg_config::probe_library("libmariadb") {
         // pkg_config did everything but the version flags for us
         parse_version(&lib.version);
         return;
