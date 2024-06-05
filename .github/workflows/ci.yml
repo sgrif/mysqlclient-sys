@@ -136,3 +136,108 @@ jobs:
           git reset --hard HEAD
           cd mysqlclient-src
           cargo publish --dry-run
+
+  check_and_test_mariadb:
+    name: Check MariaDB
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-13, macos-14, windows-2022]
+        features: [default, buildtime_bindgen]
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
+          echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
+
+      - name: Stop current MySQL server
+        run: |
+          sudo systemctl stop mysql.service
+          sudo apt-get purge -y mysql-server
+        if: runner.os == 'Linux'
+
+      - name: Install MariaDB Client Libs (Linux)
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libmariadb-dev mariadb-server
+          sudo mysql -e 'set password=password("")'
+          mysql -e "create database diesel_unit_test" -uroot -h 127.0.0.1
+          echo "MYSQL_DATABASE_URL=mysql://root@127.0.0.1/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://root@127.0.0.1/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://root@127.0.0.1/diesel_unit_test" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/include/mariadb" >> $GITHUB_ENV
+        if: runner.os == 'Linux'
+
+      - name: Install MariaDB 10.5 (MacOS)
+        if: matrix.os == 'macos-13'
+        run: |
+          brew install mariadb@10.5
+          /usr/local/opt/mariadb@10.5/bin/mysql_install_db
+          /usr/local/opt/mariadb@10.5/bin/mysql.server start
+          sleep 3
+          /usr/local/opt/mariadb@10.5/bin/mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
+          echo "MYSQL_DATABASE_URL=mysql://runner@localhost/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://runner@localhost/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://runner@localhost/diesel_unit_test" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/usr/local/opt/mariadb@10.5/lib/pkgconfig" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/local/opt/mariadb@10.5/include/mysql" >> $GITHUB_ENV
+
+      - name: Install MariaDB latest (MacOS M1)
+        if: matrix.os == 'macos-14'
+        run: |
+          brew install mariadb
+          brew services start mariadb
+          ls /opt/homebrew/opt/mariadb/lib/pkgconfig
+          sleep 3
+          /opt/homebrew/opt/mariadb/bin/mariadb -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
+          echo "MYSQL_DATABASE_URL=mysql://runner@localhost/diesel_test" >> $GITHUB_ENV
+          echo "MYSQL_EXAMPLE_DATABASE_URL=mysql://runner@localhost/diesel_example" >> $GITHUB_ENV
+          echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://runner@localhost/diesel_unit_test" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mariadb/lib" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=/opt/homebrew/opt/mariadb/lib/pkgconfig" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I/opt/homebrew/opt/mariadb/include/mysql" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=11.4" >> $GITHUB_ENV
+
+      - name: Install MariaDB (Windows)
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: |
+          curl -L https://ftp.osuosl.org/pub/mariadb/mariadb-11.4.2/winx64-packages/mariadb-11.4.2-winx64.zip -o library.zip
+          unzip library.zip
+
+      - name: Set variables for MariaDB (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/lib/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=11.4.2" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I./include" >> $GITHUB_ENV
+          mkdir include
+          cp ./mariadb-11.4.2-winx64/include include/mysql -r
+          dir ./include/mysql
+          dir ./mariadb-11.4.2-winx64/lib
+
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check
+        shell: bash
+        run: |
+          cargo check --no-default-features --features "${{ matrix.features }}" --verbose
+
+      - name: Tests
+        shell: bash
+        run: |
+          cargo test --no-default-features --features "${{ matrix.features }}"
