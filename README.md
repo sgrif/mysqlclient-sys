@@ -17,10 +17,10 @@ libmysql-client using the following methods:
 
 - First, it will attempt to use pkg-config to locate it. All the config options,
   such as `PKG_CONFIG_ALLOW_CROSS`, `PKG_CONFIG_ALL_STATIC` etc., of the crate
-  [pkg-config](http://alexcrichton.com/pkg-config-rs/pkg_config/index.html)
+  [pkg-config](https://docs.rs/pkg-config/latest/pkg_config/)
   apply.
 - MSVC ABI builds will then check for a [Vcpkg](https://github.com/Microsoft/vcpkg)
-  installation using the [vcpkg cargo build helper](https://github.com/mcgoo/vcpkg-rs).
+  installation using the [vcpkg cargo build helper](https://docs.rs/vcpkg/latest/vcpkg/).
   Set the `VCPKG_ROOT` environment variable to point to your Vcpkg installation and
   run `vcpkg install libmysql:x64-windows` to install the required libraries.
 - If the library cannot be found by using the steps above the build script will 

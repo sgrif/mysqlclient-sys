@@ -114,20 +114,22 @@ jobs:
         run: |
           cargo test --no-default-features --features "${{ matrix.features }}"
 
-      # - name: Test compile diesel
-      #   shell: bash
-      #   run: |
-      #     cargo new test_diesel
-      #     cd test_diesel
-      #     echo "[workspace]" >> Cargo.toml
-      #     cargo add diesel --no-default-features --features "mysql" --git "https://github.com/weiznich/diesel/" --branch "fix/mysql_troubles"
-      #     cargo add mysqlclient-sys
-      #     echo "[patch.crates-io]" >> Cargo.toml
-      #     echo "mysqlclient-sys = { path = \"..\" }" >> Cargo.toml
-      #     cat Cargo.toml
-      #     echo "use diesel::prelude::*;" > src/main.rs
-      #     echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
-      #     cargo build --features "mysqlclient-sys/${{ matrix.features }}"
+      - name: Test compile diesel
+        shell: bash
+        # allow to fail as diesel might not pull in the right feature yet
+        continue-on-error: true
+        run: |
+          cargo new test_diesel
+          cd test_diesel
+          echo "[workspace]" >> Cargo.toml
+          cargo add diesel --no-default-features --features "mysql" --git "https://github.com/diesel-rs/diesel/" --branch "master"
+          cargo add mysqlclient-sys
+          echo "[patch.crates-io]" >> Cargo.toml
+          echo "mysqlclient-sys = { path = \"..\" }" >> Cargo.toml
+          cat Cargo.toml
+          echo "use diesel::prelude::*;" > src/main.rs
+          echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
+          cargo build --features "mysqlclient-sys/${{ matrix.features }}"
 
       - name: Test all files included
         shell: bash
