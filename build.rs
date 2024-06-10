@@ -146,11 +146,11 @@ fn parse_version(version: &str) {
             );
         }
         println!("cargo:rustc-cfg=mysql_5_7_x");
-    } else if version.starts_with("8.0.") || version.starts_with("21.") {
+    } else if version.starts_with("8.0.") || version == "21" || version.starts_with("21.") {
         println!("cargo:rustc-cfg=mysql_8_0_x");
-    } else if version.starts_with("8.3.") || version.starts_with("23.") {
+    } else if version.starts_with("8.3.") || version == "23" || version.starts_with("23.") {
         println!("cargo:rustc-cfg=mysql_8_3_x");
-    } else if version.starts_with("8.4.") || version.starts_with("24.") {
+    } else if version.starts_with("8.4.") || version == "24" || version.starts_with("24.") {
         println!("cargo:rustc-cfg=mysql_8_4_x");
     } else if version.starts_with("10.") || version.starts_with("11.") || version.starts_with("3.")
     {
