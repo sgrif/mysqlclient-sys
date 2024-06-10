@@ -56,6 +56,7 @@ jobs:
           echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://root@localhost/diesel_unit_test" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=/usr/local/opt/mysql@8.0/lib/pkgconfig" >> $GITHUB_ENV
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/local/opt/mysql@8.0/include/mysql" >> $GITHUB_ENV
+          echo "OUT_DIR=/tmp" >> $GITHUB_ENV
           ls /usr/local/opt/mysql@8.0/include/mysql
 
       - name: Install MySQL (MacOS M1)
@@ -71,6 +72,7 @@ jobs:
           echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mysql@8.3/lib" >> $GITHUB_ENV
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I/opt/homebrew/opt/mysql@8.3/include/mysql" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=8.3" >> $GITHUB_ENV
+          echo "OUT_DIR=/tmp" >> $GITHUB_ENV
           ls /opt/homebrew/opt/mysql@8.3/include/mysql
 
       - name: Install MySQL (Windows)
@@ -128,6 +130,12 @@ jobs:
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
           cargo build --features "mysqlclient-sys/${{ matrix.features }}"
+
+      - name: Generated bindings.rs
+        if: matrix.os != 'Windows' && matrix.features != 'bundled'
+        shell: bash
+        run: |
+          if [ -f /tmp/bindings.rs ]; then cat /tmp/bindings.rs; fi
 
       - name: Test all files included
         shell: bash
