@@ -232,6 +232,7 @@ jobs:
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/lib/" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=11.4.2" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIBNAME=mariadbclient" >> $GITHUB_ENV
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I./include/mariadb" >> $GITHUB_ENV
           mkdir include
           cp ./mariadb-11.4.2-winx64/include/mysql include/mariadb -r

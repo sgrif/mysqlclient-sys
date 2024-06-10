@@ -15,10 +15,12 @@ fn main() {
         .replace("-", "_");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_VERSION");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIBNAME");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_STATIC");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_VERSION_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_STATIC_{target}");
+    let libname = env::var("MYSQLCLIENT_LIBNAME").unwrap_or("mysqlclient".to_string());
     let link_specifier = if env::var("MYSQLCLIENT_STATIC")
         .or(env::var(format!("MYSQLCLIENT_STATIC_{target}")))
         .is_ok()
@@ -47,7 +49,7 @@ fn main() {
         env::var("MYSQLCLIENT_LIB_DIR").or(env::var(format!("MYSQLCLIENT_LIB_DIR_{target}")))
     {
         println!("cargo:rustc-link-search=native={path}");
-        println!("cargo:rustc-link-lib={link_specifier}mysqlclient");
+        println!("cargo:rustc-link-lib={link_specifier}{libname}");
         if let Ok(version) =
             env::var("MYSQLCLIENT_VERSION").or(env::var(format!("MYSQLCLIENT_VERSION_{target}")))
         {
