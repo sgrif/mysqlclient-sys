@@ -23,6 +23,8 @@ libmysql-client using the following methods:
   installation using the [vcpkg cargo build helper](https://docs.rs/vcpkg/latest/vcpkg/).
   Set the `VCPKG_ROOT` environment variable to point to your Vcpkg installation and
   run `vcpkg install libmysql:x64-windows` to install the required libraries.
+- The library name `mysqlclient` is used unless `MYSQLCLIENT_LIBNAME` environment
+  variable is specified.
 - If the library cannot be found by using the steps above the build script will 
   check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables
 - If the library cannot be found using `pkg-config`, it will invoke the command
