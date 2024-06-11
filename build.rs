@@ -138,6 +138,8 @@ fn parse_version(version: &str) {
     // libmysqlclient23 -> 8.3.0
     // libmysqlclient24 -> 8.4.0
     // libmariadb-dev 3.3.8 -> mariadb 10.x
+    // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
+    // major.
     if version.starts_with("5.7.") || version.starts_with("20.") {
         if std::env::var("CARGO_CFG_WINDOWS").is_ok() {
             panic!(
