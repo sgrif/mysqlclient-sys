@@ -118,6 +118,7 @@ fn parse_version(version: &str) {
                 Ok("aarch64")
             ))
     {
+        #[cfg(not(feature = "buildtime_bindgen"))]
         panic!(
             "mysqlclient-sys does not provide bundled bindings for {}\n\
                 Consider using the `buildtime_bindgen` feature or \
