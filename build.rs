@@ -170,6 +170,8 @@ fn parse_version(version: &str) {
 #[cfg(target_env = "msvc")]
 fn try_vcpkg() -> bool {
     if vcpkg::find_package("libmariadb").is_ok() {
+        println!("cargo:rustc-link-lib=Secur32");
+        println!("cargo:rustc-link-lib=Bcrypt");
         return true;
     } else if vcpkg::find_package("libmysql").is_ok() {
         return true;
