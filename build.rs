@@ -269,6 +269,7 @@ fn autogen_bindings(target: &str) {
         .allowlist_type("mysql.*")
         .allowlist_type("mariadb.*")
         .allowlist_var("MYSQL.*")
+        .allowlist_var("MARIADB.*")
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: true,
         })
