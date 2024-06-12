@@ -26,6 +26,10 @@ fn main() {
     let libname = env::var("MYSQLCLIENT_LIBNAME")
         .unwrap_or_else(|_| env::var("MYSQLCLIENT_LIBNAME_{target}")
             .unwrap_or_else(|_| String::from("mysqlclient")));
+    if libname == "mariadbclient" {
+        println!("cargo:rustc-link-lib=Secur32");
+        println!("cargo:rustc-link-lib=Bcrypt");
+    }
     let link_specifier = if env::var("MYSQLCLIENT_STATIC")
         .or(env::var(format!("MYSQLCLIENT_STATIC_{target}")))
         .is_ok()
