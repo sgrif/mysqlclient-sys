@@ -233,8 +233,11 @@ fn autogen_bindings(args: Vec<Box<str>>) {
         .header("bindings/wrapper.h")
         .clang_args(args)
         .allowlist_function("mysql.*")
+        .allowlist_function("mariadb.*")
         .allowlist_type("MYSQL.*")
+        .allowlist_type("MARIADB.*")
         .allowlist_type("mysql.*")
+        .allowlist_type("mariadb.*")
         .allowlist_var("MYSQL.*")
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: true,
