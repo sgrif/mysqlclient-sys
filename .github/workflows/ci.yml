@@ -17,17 +17,15 @@ jobs:
         os: [ubuntu-latest, macos-13, macos-14, windows-2022]
         features: [default, buildtime_bindgen, bundled]
         install: [default]
-        #include:
-        # note 33min for vcpkg install
-        #  - target: mysql
-        #    os: windows-2022
-        #    install: vcpkg
-        #    features: buildtime_bindgen
-        # MariaDB quicker at 7min
-        #  - target: mariadb
-        #    os: windows-2022
-        #    install: vcpkg
-        #    features: buildtime_bindgen
+        include:
+         - target: mysql
+           os: windows-2022
+           install: vcpkg
+           features: buildtime_bindgen
+         - target: mariadb
+           os: windows-2022
+           install: vcpkg
+           features: buildtime_bindgen
         exclude:
           - target: mariadb
             features: bundled
