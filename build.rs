@@ -70,20 +70,17 @@ fn main() {
             return;
         }
     } else if let Some(output) = mysql_config_variable("--libs") {
-        let parts = output.split_ascii_whitespace().collect::<Vec<_>>();
-        assert_eq!(
-            parts.len(),
-            2,
-            "Unexpected output from mysql_config: `{output}`"
-        );
-        let lib = parts[1]
-            .strip_prefix("-l")
-            .unwrap_or_else(|| panic!("Unexpected output from mysql_config: {output}"));
-        let path = parts[0]
-            .strip_prefix("-L")
-            .unwrap_or_else(|| panic!("Unexpected output from mysql_config: {output}"));
-        println!("cargo:rustc-link-search=native={path}");
-        println!("cargo:rustc-link-lib={link_specifier}{lib}");
+        let parts = output.split_ascii_whitespace();
+        for part in parts {
+            if let Some(lib) = part.strip_prefix("-l") {
+                println!("cargo:rustc-link-lib={link_specifier}{lib}");
+            } else if let Some(path) = part.strip_prefix("-L") {
+                println!("cargo:rustc-link-search=native={path}");
+            } else {
+                panic!("Unexpected output from mysql_config: `{output}`");
+            }
+        }
+
         if let Some(version) = mysql_config_variable("--version") {
             parse_version(&version);
             return;
