@@ -27,12 +27,15 @@ libmysql-client using the following methods:
   variable is specified.
 - If the library cannot be found by using the steps above the build script will 
   check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables.
-  MYSQLCLIENT_INCLUDE_DIR is used to find the mysql.h include header falling back
-  to MYSQLCLIENT_LIB_DIR/../include if not there.
 - If the library cannot be found using `pkg-config`, it will invoke the command
   `mysql_config --variable=pkglibdir`
 
 The crate will try to use pregenerated bindings for a variety of libmysqlclient versions and supported operating systems.
+
+The `buildtime_bindgen` feature allows you to generate bindings at build time matching your locally installed libmysqlclient version. It uses `pkg-config`, `vcpkg`, `mysql_config` or the `MYSQLCLIENT_INCLUDE_DIR` variable to determine the location of your `mysql.h` header. 
+Additional bindgen configurations can be provided by setting the `BINDGEN_EXTRA_CLANG_ARGS` variable.
+
+All `MYSQLCLIENT_*` environment can be post-fixed by a target to allow setting different values for different targets. For example `MYSQLCLIENT_LIB_DIR_x86_64_unknown_linux_gnu` would set the `MYSQLCLIENT_LIB_DIR` variable for the `x86_64-unknown-linux-gnu` target. The `MYSQLCLIENT_LIB_DIR` variable takes precedence before the target specific variants.
 
 ## License
 
