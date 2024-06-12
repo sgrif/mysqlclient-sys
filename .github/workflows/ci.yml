@@ -16,6 +16,18 @@ jobs:
         target: [ mysql, mariadb ]
         os: [ubuntu-latest, macos-13, macos-14, windows-2022]
         features: [default, buildtime_bindgen, bundled]
+        install: [default]
+        #include:
+        # note 33min for vcpkg install
+        #  - target: mysql
+        #    os: windows-2022
+        #    install: vcpkg
+        #    features: buildtime_bindgen
+        # MariaDB quicker at 7min
+        #  - target: mariadb
+        #    os: windows-2022
+        #    install: vcpkg
+        #    features: buildtime_bindgen
         exclude:
           - target: mariadb
             features: bundled
@@ -119,21 +131,27 @@ jobs:
           echo "MYSQL_UNIT_TEST_DATABASE_URL=mysql://runner@localhost/diesel_unit_test" >> $GITHUB_ENV
 
       - name: Install MySQL (Windows)
-        if: runner.os == 'Windows' && matrix.target == 'mysql' && matrix.features != 'bundled'
+        if: runner.os == 'Windows' && matrix.target == 'mysql' && matrix.features != 'bundled' && matrix.install != 'vcpkg'
         shell: cmd
         run: |
           curl -L https://dev.mysql.com/get/Downloads/MySQL-8.4/mysql-8.4.0-winx64.zip -o library.zip
           unzip library.zip
 
       - name: Install MariaDB (Windows)
-        if: runner.os == 'Windows' && matrix.target == 'mariadb'
+        if: runner.os == 'Windows' && matrix.target == 'mariadb' && matrix.install != 'vcpkg'
         shell: cmd
         run: |
           curl -L https://ftp.osuosl.org/pub/mariadb/mariadb-11.4.2/winx64-packages/mariadb-11.4.2-winx64.zip -o library.zip
           unzip library.zip
 
+      - name: Install ${{ matrix.target }} (Windows vcpkg)
+        if: runner.os == 'Windows' && matrix.install == 'vcpkg'
+        shell: cmd
+        run: |
+            vcpkg install lib${{ matrix.target }}
+
       - name: Set variables for mysql (Windows)
-        if: runner.os == 'Windows' && matrix.target == 'mysql' &&  matrix.features != 'bundled'
+        if: runner.os == 'Windows' && matrix.target == 'mysql' &&  matrix.features != 'bundled' && matrix.install != 'vcpkg'
         shell: bash
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.4.0-winx64/lib/" >> $GITHUB_ENV
@@ -142,7 +160,7 @@ jobs:
           dir ./mysql-8.4.0-winx64/include
 
       - name: Set variables for MariaDB (Windows)
-        if: runner.os == 'Windows' && matrix.target == 'mariadb'
+        if: runner.os == 'Windows' && matrix.target == 'mariadb' && matrix.install != 'vcpkg'
         shell: bash
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/lib/" >> $GITHUB_ENV
