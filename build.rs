@@ -1,4 +1,5 @@
 use std::env;
+use std::path::PathBuf;
 use std::process::Command;
 
 fn main() {
@@ -6,14 +7,13 @@ fn main() {
         parse_version("8.4.0");
         return;
     }
-    if cfg!(feature = "buildtime_bindgen") {
-        autogen_bindings();
-    }
     let target = std::env::var("TARGET")
         .expect("Set by cargo")
         .to_ascii_uppercase()
         .replace("-", "_");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_VERSION");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_INCLUDE_DIR");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_INCLUDE_DIR_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB_DIR");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB_DIR_{target}");
@@ -34,32 +34,47 @@ fn main() {
     } else {
         ""
     };
+    let mut clang_args: Vec<Box<str>> = Vec::new();
     if let Ok(lib) = pkg_config::probe_library("mysqlclient") {
         // pkg_config did everything but the version flags for us
         parse_version(&lib.version);
-        return;
+        for path in lib.include_paths {
+            let boxed_path: Box<str> = format!("-I{}", path.to_string_lossy()).into();
+            clang_args.push(boxed_path);
+        }
     } else if let Ok(lib) = pkg_config::probe_library("libmariadb") {
         // pkg_config did everything but the version flags for us
         parse_version(&lib.version);
-        return;
-    } else if try_vcpkg() {
+        for path in lib.include_paths {
+            let boxed_path: Box<str> = format!("-I{}", path.to_string_lossy()).into();
+            clang_args.push(boxed_path);
+        }
+    } else if let Some(args) = try_vcpkg() {
+        for path in args {
+            let boxed_path: Box<str> = path.to_string_lossy().into();
+            clang_args.push(boxed_path);
+        }
         // vcpkg did everything for us
         if let Ok(version) =
             env::var("MYSQLCLIENT_VERSION").or(env::var(format!("MYSQLCLIENT_VERSION_{target}")))
         {
             parse_version(&version);
-            return;
         }
     } else if let Ok(path) =
         env::var("MYSQLCLIENT_LIB_DIR").or(env::var(format!("MYSQLCLIENT_LIB_DIR_{target}")))
     {
+        if let Ok(ipath) =
+            env::var("MYSQLCLIENT_INCLUDE_DIR").or(env::var(format!("MYSQLCLIENT_INCLUDE_DIR_{target}"))) {
+            clang_args.push(format!("-I{}", ipath).to_string().into_boxed_str());
+        } else {
+            clang_args.push(format!("-I{}\\..\\include", path).to_string().into_boxed_str());
+        }
         println!("cargo:rustc-link-search=native={path}");
         println!("cargo:rustc-link-lib={link_specifier}{libname}");
         if let Ok(version) =
             env::var("MYSQLCLIENT_VERSION").or(env::var(format!("MYSQLCLIENT_VERSION_{target}")))
         {
             parse_version(&version);
-            return;
         }
     } else if let Some(output) = mysql_config_variable("--libs") {
         let parts = output.split_ascii_whitespace().collect::<Vec<_>>();
@@ -78,24 +93,32 @@ fn main() {
         println!("cargo:rustc-link-lib={link_specifier}{lib}");
         if let Some(version) = mysql_config_variable("--version") {
             parse_version(&version);
-            return;
         }
+        if let Some(output) = mysql_config_variable("--include") {
+            for part in output.split_ascii_whitespace() {
+                clang_args.push(part.to_string().into_boxed_str());
+            }
+        }
+    } else {
+        panic!(
+            "Did not find a compatible version of libmysqlclient.\n\
+                Ensure that you installed one and teached mysqlclient-sys how to find it\n\
+                You have the following options for that:\n\
+                \n\
+                * Use `pkg_config` to automatically detect the right location\n\
+                * Use vcpkg to automatically detect the right location. \n\
+                  You also need to set `MYSQLCLIENT_VERSION` to specify which\n\
+                  version of libmysqlclient you are using\n\
+                * Set the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment \n\
+                  variables to point the compiler to the right directory and specify \n\
+                  which version is used\n\
+                * Make the `mysql_config` binary avaible in the environment that invokes\n\
+                  the compiler"
+        );
     }
-    panic!(
-        "Did not find a compatible version of libmysqlclient.\n\
-            Ensure that you installed one and teached mysqlclient-sys how to find it\n\
-            You have the following options for that:\n\
-            \n\
-            * Use `pkg_config` to automatically detect the right location\n\
-            * Use vcpkg to automatically detect the right location. \n\
-              You also need to set `MYSQLCLIENT_VERSION` to specify which\n\
-              version of libmysqlclient you are using\n\
-            * Set the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment \n\
-              variables to point the compiler to the right directory and specify \n\
-              which version is used\n\
-            * Make the `mysql_config` binary avaible in the environment that invokes\n\
-              the compiler"
-    );
+    if cfg!(feature = "buildtime_bindgen") {
+        autogen_bindings(clang_args);
+    }
 }
 
 fn mysql_config_variable(var_name: &str) -> Option<String> {
@@ -175,27 +198,28 @@ fn parse_version(version: &str) {
 }
 
 #[cfg(target_env = "msvc")]
-fn try_vcpkg() -> bool {
-    if vcpkg::find_package("libmariadb").is_ok() {
+fn try_vcpkg() -> Option<Vec<PathBuf>> {
+    if let Ok(lib) = vcpkg::find_package("libmariadb") {
         println!("cargo:rustc-link-lib=Secur32");
         println!("cargo:rustc-link-lib=Bcrypt");
-        return true;
-    } else if vcpkg::find_package("libmysql").is_ok() {
-        return true;
+        Some(lib.include_paths)
+    } else if let Ok(lib) = vcpkg::find_package("libmysql") {
+        Some(lib.include_paths)
+    } else {
+        None
     }
-    false
 }
 
 #[cfg(not(target_env = "msvc"))]
-fn try_vcpkg() -> bool {
-    false
+fn try_vcpkg() -> Option<Vec<PathBuf>> {
+    None
 }
 
 #[cfg(not(feature = "buildtime_bindgen"))]
-fn autogen_bindings() {}
+fn autogen_bindings(_args: Vec<Box<str>>) {}
 
 #[cfg(feature = "buildtime_bindgen")]
-fn autogen_bindings() {
+fn autogen_bindings(args: Vec<Box<str>>) {
     // if you update the options here you also need to
     // update the bindgen command in `DEVELOPMENT.md`
     // and regenerate the bundled bindings with the new options
@@ -203,6 +227,7 @@ fn autogen_bindings() {
         // The input header we would like to generate
         // bindings for.
         .header("bindings/wrapper.h")
+        .clang_args(args)
         .allowlist_function("mysql.*")
         .allowlist_type("MYSQL.*")
         .allowlist_type("mysql.*")

@@ -49,7 +49,6 @@ jobs:
           sudo systemctl start mysql.service
           sudo apt-get update
           sudo apt-get -y install libmysqlclient-dev
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/include/mysql" >> $GITHUB_ENV
 
       - name: Install MariaDB Client Libs and Server (Linux)
         if: runner.os == 'Linux' && matrix.target == 'mariadb'
@@ -58,7 +57,6 @@ jobs:
           sudo apt-get -y install libmariadb-dev mariadb-server
           sleep 3
           sudo mysql -e 'set password=password("root")'
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/include/mariadb" >> $GITHUB_ENV
 
       - name: Linux env
         if: runner.os == 'Linux' && matrix.features != 'bundled'
@@ -77,7 +75,6 @@ jobs:
           /usr/local/opt/mysql@8.0/bin/mysql -e "create database diesel_test; create database diesel_unit_test;"
           /usr/local/opt/mysql@8.0/bin/mysql -e "create user runner@localhost; grant all on \`diesel_%\`.* to 'runner'@'localhost';"
           echo "PKG_CONFIG_PATH=/usr/local/opt/mysql@8.0/lib/pkgconfig" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/local/opt/mysql@8.0/include/mysql" >> $GITHUB_ENV
           ls /usr/local/opt/mysql@8.0/include/mysql
 
       - name: Install MariaDB 10.5 (MacOS)
@@ -89,7 +86,6 @@ jobs:
           sleep 3
           /usr/local/opt/mariadb@10.5/bin/mysql -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
           echo "PKG_CONFIG_PATH=/usr/local/opt/mariadb@10.5/lib/pkgconfig" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I /usr/local/opt/mariadb@10.5/include/mysql" >> $GITHUB_ENV
 
       - name: Install MySQL (MacOS M1)
         if: matrix.os == 'macos-14' && matrix.target == 'mysql' && matrix.features != 'bundled'
@@ -100,7 +96,6 @@ jobs:
           /opt/homebrew/opt/mysql@8.3/bin/mysql -e "create database diesel_test; create database diesel_unit_test;"
           /opt/homebrew/opt/mysql@8.3/bin/mysql -e "create user runner@localhost; grant all on \`diesel_%\`.* to 'runner'@'localhost';"
           echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mysql@8.3/lib" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I/opt/homebrew/opt/mysql@8.3/include/mysql" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=8.3" >> $GITHUB_ENV
           ls /opt/homebrew/opt/mysql@8.3/include/mysql
 
@@ -114,7 +109,6 @@ jobs:
           /opt/homebrew/opt/mariadb/bin/mariadb -e "create database diesel_test; create database diesel_unit_test; grant all on \`diesel_%\`.* to 'runner'@'localhost';" -urunner
           echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mariadb/lib" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=/opt/homebrew/opt/mariadb/lib/pkgconfig" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I/opt/homebrew/opt/mariadb/include/mysql" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=11.4" >> $GITHUB_ENV
 
       - name: Env MacOS
@@ -144,24 +138,19 @@ jobs:
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.4.0-winx64/lib/" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=8.4.0" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I./include/mysql" >> $GITHUB_ENV
-          mkdir include
-          cp ./mysql-8.4.0-winx64/include include/mysql -r
-          dir ./include/mysql
           dir ./mysql-8.4.0-winx64/lib
+          dir ./mysql-8.4.0-winx64/include
 
       - name: Set variables for MariaDB (Windows)
         if: runner.os == 'Windows' && matrix.target == 'mariadb'
         shell: bash
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/lib/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_INCLUDE_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/include/mysql/" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=11.4.2" >> $GITHUB_ENV
           echo "MYSQLCLIENT_LIBNAME=mariadbclient" >> $GITHUB_ENV
-          echo "BINDGEN_EXTRA_CLANG_ARGS=-I./include/mariadb" >> $GITHUB_ENV
-          mkdir include
-          cp ./mariadb-11.4.2-winx64/include/mysql include/mariadb -r
-          dir ./include/mariadb
           dir ./mariadb-11.4.2-winx64/lib
+          dir ./mariadb-11.4.2-winx64/include
 
       - name: Windows setup (bundled)
         if: runner.os == 'Windows' && matrix.features == 'bundled'

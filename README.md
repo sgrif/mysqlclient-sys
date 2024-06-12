@@ -26,7 +26,9 @@ libmysql-client using the following methods:
 - The library name `mysqlclient` is used unless `MYSQLCLIENT_LIBNAME` environment
   variable is specified.
 - If the library cannot be found by using the steps above the build script will 
-  check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables
+  check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables.
+  MYSQLCLIENT_INCLUDE_DIR is used to find the mysql.h include header falling back
+  to MYSQLCLIENT_LIB_DIR/../include if not there.
 - If the library cannot be found using `pkg-config`, it will invoke the command
   `mysql_config --variable=pkglibdir`
 
