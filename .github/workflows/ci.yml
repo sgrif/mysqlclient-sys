@@ -143,9 +143,22 @@ jobs:
 
       - name: Install ${{ matrix.target }} (Windows vcpkg)
         if: runner.os == 'Windows' && matrix.install == 'vcpkg'
-        shell: cmd
+        shell: bash
         run: |
-            vcpkg install lib${{ matrix.target }}
+          echo "VCPKG_ROOT=C:\\vcpkg\\" >> $GITHUB_ENV
+          vcpkg install lib${{ matrix.target }}:x64-windows-static-md
+
+      - name: Set variables for mariadb (Windows vcpkg)
+        if: runner.os == 'Windows' && matrix.target == 'mysql' && matrix.install == 'vcpkg'
+        shell: bash
+        run: |
+          echo "MYSQLCLIENT_VERSION=8.4" >> $GITHUB_ENV
+
+      - name: Set variables for mariadb (Windows vcpkg)
+        if: runner.os == 'Windows' && matrix.target == 'mariadb' && matrix.install == 'vcpkg'
+        shell: bash
+        run: |
+          echo "MYSQLCLIENT_VERSION=11.4" >> $GITHUB_ENV
 
       - name: Set variables for mysql (Windows)
         if: runner.os == 'Windows' && matrix.target == 'mysql' &&  matrix.features != 'bundled' && matrix.install != 'vcpkg'

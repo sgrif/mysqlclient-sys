@@ -292,7 +292,7 @@ fn autogen_bindings(target: &str) {
             vcpkg::find_package(VCPKG_MYSQL_LIB).or_else(|_| vcpkg::find_package(VCPKG_MARIADB_LIB))
         {
             for include in lib.include_paths {
-                builder = builder.clang_arg(format!("-I{}", include.display()));
+                builder = builder.clang_arg(format!("-I{}\\mysql", include.display()));
             }
         }
     }
