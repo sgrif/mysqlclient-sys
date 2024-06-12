@@ -1,4 +1,5 @@
 use std::env;
+use std::path::PathBuf;
 use std::process::Command;
 
 fn main() {
@@ -102,68 +103,119 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
         .next()
 }
 
-fn parse_version(version: &str) {
-    // we have bundled bindings for:
-    // * x86_64 for windows, linux and macos
-    // * x86 for windows
-    // * aarch64 for linux + macos
-    if !(matches!(
-        std::env::var("CARGO_CFG_TARGET_ARCH").as_deref(),
-        Ok("x86_64")
-    ) || (std::env::var("CARGO_CFG_WINDOWS").is_ok()
-        && matches!(std::env::var("CARGO_CFG_TARGET_ARCH").as_deref(), Ok("x86")))
-        || std::env::var("CARGO_CFG_WINDOWS").is_err()
-            && matches!(
-                std::env::var("CARGO_CFG_TARGET_ARCH").as_deref(),
-                Ok("aarch64")
-            ))
-    {
-        #[cfg(not(feature = "buildtime_bindgen"))]
-        panic!(
-            "mysqlclient-sys does not provide bundled bindings for {}\n\
-                Consider using the `buildtime_bindgen` feature or \
-                contribute bindings for your target to the crate",
-            std::env::var("TARGET").expect("Set by cargo")
-        );
-    }
-    println!("cargo::rustc-check-cfg=cfg(mysql_5_7_x)");
-    println!("cargo::rustc-check-cfg=cfg(mysql_8_0_x)");
-    println!("cargo::rustc-check-cfg=cfg(mysql_8_3_x)");
-    println!("cargo::rustc-check-cfg=cfg(mysql_8_4_x)");
-    println!("cargo::rustc-check-cfg=cfg(mariadb_10_x)");
-    // ubuntu/debian packages use the following package versions:
-    // libmysqlclient20 -> 5.7.x
-    // libmysqlclient21 -> 8.0.x
-    // libmysqlclient23 -> 8.3.0
-    // libmysqlclient24 -> 8.4.0
-    // libmariadb-dev 3.3.8 -> mariadb 10.x
-    if version.starts_with("5.7.") || version.starts_with("20.") {
-        if std::env::var("CARGO_CFG_WINDOWS").is_ok() {
-            panic!(
-                "mysqlclient-sys does not provide bundled bindings \
-                 for libmysqlclient {version} on windows. \n\
-                 Consider using the `buildtime_bindgen` feature or \
-                 contribute bindings to the crate"
-            );
+#[derive(Clone, Copy)]
+enum MysqlVersion {
+    Mysql5,
+    Mysql80,
+    Mysql83,
+    Mysql84,
+    MariaDb10,
+}
+
+impl MysqlVersion {
+    const ALL: &'static [Self] = &[
+        Self::Mysql5,
+        Self::Mysql80,
+        Self::Mysql83,
+        Self::Mysql84,
+        Self::MariaDb10,
+    ];
+
+    fn as_cfg(&self) -> &'static str {
+        match self {
+            MysqlVersion::Mysql5 => "mysql_5_7_x",
+            MysqlVersion::Mysql80 => "mysql_8_0_x",
+            MysqlVersion::Mysql83 => "mysql_8_3_x",
+            MysqlVersion::Mysql84 => "mysql_8_4_x",
+            MysqlVersion::MariaDb10 => "mariadb_10_x",
         }
-        println!("cargo:rustc-cfg=mysql_5_7_x");
-    } else if version.starts_with("8.0.") || version.starts_with("21.") {
-        println!("cargo:rustc-cfg=mysql_8_0_x");
-    } else if version.starts_with("8.3.") || version.starts_with("23.") {
-        println!("cargo:rustc-cfg=mysql_8_3_x");
-    } else if version.starts_with("8.4.") || version.starts_with("24.") {
-        println!("cargo:rustc-cfg=mysql_8_4_x");
-    } else if version.starts_with("10.") || version.starts_with("11.") || version.starts_with("3.")
-    {
-        println!("cargo:rustc-cfg=mariadb_10_x");
-    } else {
-        #[cfg(not(feature = "buildtime_bindgen"))]
-        panic!(
-            "mysqlclient-sys does not provide bundled bindings for libmysqlclient {version}. \
-             Consider using the `buildtime_bindgen` feature or \
-             contribute bindings to the crate"
-        )
     }
+
+    fn parse_version(version: &str) -> Option<Self> {
+        // ubuntu/debian packages use the following package versions:
+        // libmysqlclient20 -> 5.7.x
+        // libmysqlclient21 -> 8.0.x
+        // libmysqlclient23 -> 8.3.0
+        // libmysqlclient24 -> 8.4.0
+        // libmariadb-dev 3.3.8 -> mariadb 10.x
+        // windows/macros versions are sometimes just literal 20, 21, …
+        if version.starts_with("5.7.") || version.starts_with("20.") || version == "20" {
+            Some(Self::Mysql5)
+        } else if version.starts_with("8.0.") || version.starts_with("21.") || version == "21" {
+            Some(Self::Mysql80)
+        } else if version.starts_with("8.3.") || version.starts_with("23.") || version == "23" {
+            Some(Self::Mysql83)
+        } else if version.starts_with("8.4.") || version.starts_with("24.") || version == "24" {
+            Some(Self::Mysql84)
+        } else if version.starts_with("10.")
+            || version.starts_with("11.")
+            || version.starts_with("3.")
+            || version == "3"
+        {
+            Some(Self::MariaDb10)
+        } else {
+            None
+        }
+    }
+}
+
+fn parse_version(version_str: &str) {
+    use MysqlVersion::*;
+
+    for v in MysqlVersion::ALL {
+        println!("cargo::rustc-check-cfg=cfg({})", v.as_cfg());
+    }
+    let version = MysqlVersion::parse_version(version_str);
+
+    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("Set by cargo");
+    let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
+    let ptr_size = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
+    let out_dir = std::env::var("OUT_DIR").expect("Set by cargo");
+    let mut bindings_target = PathBuf::from(out_dir);
+    bindings_target.push("bindings.rs");
+
+    if let Some(version) = version {
+        println!("cargo:rustc-cfg={}", version.as_cfg());
+    }
+
+    let bindings_path = match (version, target_arch.as_str(), ptr_size.as_str(), is_windows) {
+        (Some(Mysql5), "x86_64" | "aarch64", "64", false) => "bindings_5_7_42_x86_64_linux.rs",
+        (Some(Mysql80), "x86_64" | "aarch64", "64", false) => "bindings_8_0_36_x86_64_linux.rs",
+        (Some(Mysql80), "x86" | "arm", "32", false) => "bindings_8_0_37_i686_linux.rs",
+        (Some(Mysql80), "x86_64", "64", true) => "bindings_8_0_36_x86_64_windows.rs",
+        (Some(Mysql80), "x86", "32", true) => "bindings_8_0_36_i686_windows.rs",
+        (Some(Mysql83), "x86_64" | "aarch64", "64", false) => "bindings_8_3_0_x86_64_linux.rs",
+        (Some(Mysql83), "x86_64", "64", true) => "bindings_8_3_0_x86_64_windows.rs",
+        (Some(Mysql83), "x86", "32", true) => "bindings_8_3_0_i686_windows.rs",
+        (Some(Mysql84), "x86_64" | "aarch64", "64", false) => "bindings_8_4_0_x86_64_linux.rs",
+        (Some(Mysql84), "x86" | "arm", "32", false) => "bindings_8_4_0_i686_linux.rs",
+        (Some(Mysql84), "x86_64", "64", true) => "bindings_8_4_0_x86_64_windows.rs",
+        (Some(Mysql84), "x86", "32", true) => "bindings_8_4_0_i686_windows.rs",
+        (Some(MariaDb10), "x86_64" | "aarch64", "64", false) => {
+            "bindings_mariadb_10_11_x86_64_linux.rs"
+        }
+        (Some(MariaDb10), "x86" | "arm", "32", false) => "bindings_mariadb_10_11_i686_linux.rs",
+        (Some(MariaDb10), "x86_64", "64", true) => "bindings_mariadb_10_11_x86_64_windows.rs",
+        (Some(MariaDb10), "x86", "32", true) => "bindings_mariadb_10_11_i686_windows.rs",
+        _ if cfg!(feature = "buildtime_bindgen") => {
+            return;
+        }
+        _ => {
+            panic!(
+                "mysqlclient-sys does not provide bundled bindings for libmysqlclient `{version_str}` \
+             for the target `{}`.
+             Consider using the `buildtime_bindgen` feature or \
+             contribute bindings to the crate",
+                std::env::var("TARGET").expect("Set by cargo")
+            )
+        }
+    };
+
+    let root = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
+    let mut bindings = PathBuf::from(root);
+    bindings.push("bindings");
+    bindings.push(bindings_path);
+    std::fs::copy(bindings, bindings_target).unwrap();
 }
 
 #[cfg(target_env = "msvc")]
