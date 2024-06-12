@@ -155,6 +155,7 @@ jobs:
         run: |
           echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.4.0-winx64/lib/" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=8.4.0" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_INCLUDE_DIR=${{github.workspace}}/mysql-8.4.0-winx64/include" >> $GITHUB_ENV
           dir ./mysql-8.4.0-winx64/lib
           dir ./mysql-8.4.0-winx64/include
 

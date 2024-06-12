@@ -290,8 +290,8 @@ fn autogen_bindings(target: &str) {
         builder = builder.clang_arg(include);
     } else {
         #[cfg(target_env = "msvc")]
-        if Ok(lib) =
-            vcpkg::find_package(VCPKG_MYSQL_LIB).ok_or(|| vcpkg::find_package(VCPKG_MARIADB_LIB))
+        if let Ok(lib) =
+            vcpkg::find_package(VCPKG_MYSQL_LIB).or_else(|_| vcpkg::find_package(VCPKG_MARIADB_LIB))
         {
             for include in lib.include_paths {
                 builder = builder.clang_arg(format!("-I{}", include.display()));
