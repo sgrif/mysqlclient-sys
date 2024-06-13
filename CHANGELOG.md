@@ -3,6 +3,14 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.0] 2024-06-13
+
+## Changed 
+
+* Added support and tests for linking libmariadb on all platforms
+* Refactor handling of pregenerated bindings to provide bindings for more platforms out of the box
+* Fixed a bug that prevented using the `buildtime_bindgen` on non x86_64 architectures
+
 ## [0.3.1] 2024-05-31
 
 ### Changed
