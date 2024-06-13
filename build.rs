@@ -211,15 +211,16 @@ fn parse_version(version_str: &str) {
         (Some(MariaDb10), "x86_64" | "aarch64", "64", false) => {
             "bindings_mariadb_10_11_x86_64_linux.rs"
         }
-        (Some(MariaDb10), "x86" | "arm", "32", false) => "bindings_mariadb_10_11_i686_linux.rs",
+        (Some(MariaDb10), "x86", "32", false) => "bindings_mariadb_10_11_i686_linux.rs",
+        (Some(MariaDb10), "arm", "32", false) => "bindings_mariadb_10_11_armv6_linux.rs",
         (Some(MariaDb10), "x86_64", "64", true) => "bindings_mariadb_10_11_x86_64_windows.rs",
         (Some(MariaDb10), "x86", "32", true) => "bindings_mariadb_10_11_i686_windows.rs",
         _ => {
             panic!(
                 "mysqlclient-sys does not provide bundled bindings for libmysqlclient `{version_str}` \
-             for the target `{}`.
-             Consider using the `buildtime_bindgen` feature or \
-             contribute bindings to the crate",
+                 for the target `{}`.
+                 Consider using the `buildtime_bindgen` feature or \
+                 contribute bindings to the crate",
                 std::env::var("TARGET").expect("Set by cargo")
             )
         }
