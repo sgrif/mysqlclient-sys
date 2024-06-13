@@ -22,13 +22,21 @@ libmysql-client using the following methods:
 - MSVC ABI builds will then check for a [Vcpkg](https://github.com/Microsoft/vcpkg)
   installation using the [vcpkg cargo build helper](https://docs.rs/vcpkg/latest/vcpkg/).
   Set the `VCPKG_ROOT` environment variable to point to your Vcpkg installation and
-  run `vcpkg install libmysql:x64-windows` to install the required libraries.
+  run `vcpkg install libmysql:x64-windows-static-md` to install the required libraries.
+  You need to set the `MYSQLCLIENT_VERSION` to specify the installed version in this case.
+- The library name `mysqlclient` is used unless `MYSQLCLIENT_LIBNAME` environment
+  variable is specified.
 - If the library cannot be found by using the steps above the build script will 
-  check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables
+  check the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment variables.
 - If the library cannot be found using `pkg-config`, it will invoke the command
   `mysql_config --variable=pkglibdir`
 
 The crate will try to use pregenerated bindings for a variety of libmysqlclient versions and supported operating systems.
+
+The `buildtime_bindgen` feature allows you to generate bindings at build time matching your locally installed libmysqlclient version. It uses `pkg-config`, `vcpkg`, `mysql_config` or the `MYSQLCLIENT_INCLUDE_DIR` variable to determine the location of your `mysql.h` header. 
+Additional bindgen configurations can be provided by setting the `BINDGEN_EXTRA_CLANG_ARGS` variable.
+
+All `MYSQLCLIENT_*` environment can be post-fixed by a target to allow setting different values for different targets. For example `MYSQLCLIENT_LIB_DIR_x86_64_unknown_linux_gnu` would set the `MYSQLCLIENT_LIB_DIR` variable for the `x86_64-unknown-linux-gnu` target. The `MYSQLCLIENT_LIB_DIR` variable takes precedence before the target specific variants.
 
 ## License
 

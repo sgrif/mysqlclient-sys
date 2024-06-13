@@ -2,24 +2,40 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
+const PKG_CONFIG_MYSQL_LIB: &str = "mysqlclient";
+const PKG_CONFIG_MARIADB_LIB: &str = "libmariadb";
+#[cfg(target_env = "msvc")]
+const VCPKG_MYSQL_LIB: &str = "libmysql";
+#[cfg(target_env = "msvc")]
+const VCPKG_MARIADB_LIB: &str = "libmariadb";
+
 fn main() {
     if cfg!(feature = "bundled") {
         parse_version("8.4.0");
         return;
-    }
-    if cfg!(feature = "buildtime_bindgen") {
-        autogen_bindings();
     }
     let target = std::env::var("TARGET")
         .expect("Set by cargo")
         .to_ascii_uppercase()
         .replace("-", "_");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_VERSION");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_INCLUDE_DIR");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_INCLUDE_DIR_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB_DIR");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB_DIR_{target}");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIBNAME");
+    println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIBNAME_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_STATIC");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_VERSION_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_LIB_{target}");
     println!("cargo::rerun-if-env-changed=MYSQLCLIENT_STATIC_{target}");
+    if cfg!(feature = "buildtime_bindgen") {
+        autogen_bindings(&target);
+    }
+    let libname = env::var("MYSQLCLIENT_LIBNAME")
+        .or_else(|_| env::var(format!("MYSQLCLIENT_LIBNAME_{target}")))
+        .unwrap_or("mysqlclient".to_string());
     let link_specifier = if env::var("MYSQLCLIENT_STATIC")
         .or(env::var(format!("MYSQLCLIENT_STATIC_{target}")))
         .is_ok()
@@ -28,11 +44,9 @@ fn main() {
     } else {
         ""
     };
-    if let Ok(lib) = pkg_config::probe_library("mysqlclient") {
-        // pkg_config did everything but the version flags for us
-        parse_version(&lib.version);
-        return;
-    } else if let Ok(lib) = pkg_config::probe_library("mariadb") {
+    if let Ok(lib) = pkg_config::probe_library(PKG_CONFIG_MYSQL_LIB)
+        .or_else(|_| pkg_config::probe_library(PKG_CONFIG_MARIADB_LIB))
+    {
         // pkg_config did everything but the version flags for us
         parse_version(&lib.version);
         return;
@@ -48,7 +62,7 @@ fn main() {
         env::var("MYSQLCLIENT_LIB_DIR").or(env::var(format!("MYSQLCLIENT_LIB_DIR_{target}")))
     {
         println!("cargo:rustc-link-search=native={path}");
-        println!("cargo:rustc-link-lib={link_specifier}mysqlclient");
+        println!("cargo:rustc-link-lib={link_specifier}{libname}");
         if let Ok(version) =
             env::var("MYSQLCLIENT_VERSION").or(env::var(format!("MYSQLCLIENT_VERSION_{target}")))
         {
@@ -56,20 +70,17 @@ fn main() {
             return;
         }
     } else if let Some(output) = mysql_config_variable("--libs") {
-        let parts = output.split_ascii_whitespace().collect::<Vec<_>>();
-        assert_eq!(
-            parts.len(),
-            2,
-            "Unexpected output from mysql_config: `{output}`"
-        );
-        let lib = parts[1]
-            .strip_prefix("-l")
-            .unwrap_or_else(|| panic!("Unexpected output from mysql_config: {output}"));
-        let path = parts[0]
-            .strip_prefix("-L")
-            .unwrap_or_else(|| panic!("Unexpected output from mysql_config: {output}"));
-        println!("cargo:rustc-link-search=native={path}");
-        println!("cargo:rustc-link-lib={link_specifier}{lib}");
+        let parts = output.split_ascii_whitespace();
+        for part in parts {
+            if let Some(lib) = part.strip_prefix("-l") {
+                println!("cargo:rustc-link-lib={link_specifier}{lib}");
+            } else if let Some(path) = part.strip_prefix("-L") {
+                println!("cargo:rustc-link-search=native={path}");
+            } else {
+                panic!("Unexpected output from mysql_config: `{output}`");
+            }
+        }
+
         if let Some(version) = mysql_config_variable("--version") {
             parse_version(&version);
             return;
@@ -138,7 +149,8 @@ impl MysqlVersion {
         // libmysqlclient23 -> 8.3.0
         // libmysqlclient24 -> 8.4.0
         // libmariadb-dev 3.3.8 -> mariadb 10.x
-        // windows/macros versions are sometimes just literal 20, 21, …
+        // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
+        // major.
         if version.starts_with("5.7.") || version.starts_with("20.") || version == "20" {
             Some(Self::Mysql5)
         } else if version.starts_with("8.0.") || version.starts_with("21.") || version == "21" {
@@ -179,6 +191,11 @@ fn parse_version(version_str: &str) {
     }
 
     let bindings_path = match (version, target_arch.as_str(), ptr_size.as_str(), is_windows) {
+        // if we use bindgen to generate bindings
+        // we don't want to copy anything
+        _ if cfg!(feature = "buildtime_bindgen") => {
+            return;
+        }
         (Some(Mysql5), "x86_64" | "aarch64", "64", false) => "bindings_5_7_42_x86_64_linux.rs",
         (Some(Mysql80), "x86_64" | "aarch64", "64", false) => "bindings_8_0_36_x86_64_linux.rs",
         (Some(Mysql80), "x86" | "arm", "32", false) => "bindings_8_0_37_i686_linux.rs",
@@ -197,9 +214,6 @@ fn parse_version(version_str: &str) {
         (Some(MariaDb10), "x86" | "arm", "32", false) => "bindings_mariadb_10_11_i686_linux.rs",
         (Some(MariaDb10), "x86_64", "64", true) => "bindings_mariadb_10_11_x86_64_windows.rs",
         (Some(MariaDb10), "x86", "32", true) => "bindings_mariadb_10_11_i686_windows.rs",
-        _ if cfg!(feature = "buildtime_bindgen") => {
-            return;
-        }
         _ => {
             panic!(
                 "mysqlclient-sys does not provide bundled bindings for libmysqlclient `{version_str}` \
@@ -220,7 +234,12 @@ fn parse_version(version_str: &str) {
 
 #[cfg(target_env = "msvc")]
 fn try_vcpkg() -> bool {
-    vcpkg::find_package("libmysql").is_ok()
+    if vcpkg::find_package(VCPKG_MYSQL_LIB).is_ok() {
+        return true;
+    } else if vcpkg::find_package(VCPKG_MARIADB_LIB).is_ok() {
+        return true;
+    }
+    false
 }
 
 #[cfg(not(target_env = "msvc"))]
@@ -229,27 +248,56 @@ fn try_vcpkg() -> bool {
 }
 
 #[cfg(not(feature = "buildtime_bindgen"))]
-fn autogen_bindings() {}
+fn autogen_bindings(_target: &str) {}
 
 #[cfg(feature = "buildtime_bindgen")]
-fn autogen_bindings() {
+fn autogen_bindings(target: &str) {
     // if you update the options here you also need to
     // update the bindgen command in `DEVELOPMENT.md`
     // and regenerate the bundled bindings with the new options
-    let bindings = bindgen::Builder::default()
+    let mut builder = bindgen::Builder::default()
         // The input header we would like to generate
         // bindings for.
         .header("bindings/wrapper.h")
         .allowlist_function("mysql.*")
+        .allowlist_function("mariadb.*")
         .allowlist_type("MYSQL.*")
+        .allowlist_type("MARIADB.*")
         .allowlist_type("mysql.*")
+        .allowlist_type("mariadb.*")
         .allowlist_var("MYSQL.*")
+        .allowlist_var("MARIADB.*")
         .default_enum_style(bindgen::EnumVariation::Rust {
             non_exhaustive: true,
         })
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
-        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
+        .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
+
+    if let Ok(lib) = pkg_config::probe_library(PKG_CONFIG_MYSQL_LIB)
+        .or_else(|_| pkg_config::probe_library(PKG_CONFIG_MARIADB_LIB))
+    {
+        for include in lib.include_paths {
+            builder = builder.clang_arg(format!("-I{}", include.display()));
+        }
+    } else if let Ok(path) = env::var("MYSQLCLIENT_INCLUDE_DIR")
+        .or_else(|_| env::var(format!("MYSQLCLIENT_INCLUDE_DIR_{target}")))
+    {
+        builder = builder.clang_arg(format!("-I{path}"));
+    } else if let Some(include) = mysql_config_variable("--include") {
+        builder = builder.clang_arg(include);
+    } else {
+        #[cfg(target_env = "msvc")]
+        if let Ok(lib) =
+            vcpkg::find_package(VCPKG_MYSQL_LIB).or_else(|_| vcpkg::find_package(VCPKG_MARIADB_LIB))
+        {
+            for include in lib.include_paths {
+                builder = builder.clang_arg(format!("-I{}\\mysql", include.display()));
+            }
+        }
+    }
+
+    let bindings = builder
         // Finish the builder and generate the bindings.
         .generate()
         // Unwrap the Result and panic on failure.
