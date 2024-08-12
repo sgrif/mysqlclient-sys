@@ -76,6 +76,8 @@ fn main() {
                 println!("cargo:rustc-link-lib={link_specifier}{lib}");
             } else if let Some(path) = part.strip_prefix("-L") {
                 println!("cargo:rustc-link-search=native={path}");
+            } else if let Some(path) = part.strip_prefix("-R") {
+                println!("cargo:rustc-link-arg=-Wl,-R{path}");
             } else {
                 panic!("Unexpected output from mysql_config: `{output}`");
             }
