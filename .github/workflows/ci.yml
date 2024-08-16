@@ -13,19 +13,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [ mysql, mariadb ]
+        target: [mysql, mariadb]
         os: [ubuntu-latest, macos-13, macos-14, windows-2022]
         features: [default, buildtime_bindgen, bundled]
         install: [default]
         include:
-         - target: mysql
-           os: windows-2022
-           install: vcpkg
-           features: buildtime_bindgen
-         - target: mariadb
-           os: windows-2022
-           install: vcpkg
-           features: buildtime_bindgen
+          - target: mysql
+            os: windows-2022
+            install: vcpkg
+            features: buildtime_bindgen
+          - target: mariadb
+            os: windows-2022
+            install: vcpkg
+            features: buildtime_bindgen
         exclude:
           - target: mariadb
             features: bundled
@@ -100,14 +100,14 @@ jobs:
       - name: Install MySQL (MacOS M1)
         if: matrix.os == 'macos-14' && matrix.target == 'mysql' && matrix.features != 'bundled'
         run: |
-          brew install mysql@8.3
-          brew services start mysql@8.3
+          brew install mysql@8.4
+          brew services start mysql@8.4
           sleep 3
-          /opt/homebrew/opt/mysql@8.3/bin/mysql -e "create database diesel_test; create database diesel_unit_test;"
-          /opt/homebrew/opt/mysql@8.3/bin/mysql -e "create user runner@localhost; grant all on \`diesel_%\`.* to 'runner'@'localhost';"
-          echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mysql@8.3/lib" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_INCLUDE_DIR=/opt/homebrew/opt/mysql@8.3/include/mysql" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_VERSION=8.3" >> $GITHUB_ENV
+          /opt/homebrew/opt/mysql@8.4/bin/mysql -e "create database diesel_test; create database diesel_unit_test;"
+          /opt/homebrew/opt/mysql@8.4/bin/mysql -e "create user runner@localhost; grant all on \`diesel_%\`.* to 'runner'@'localhost';"
+          echo "MYSQLCLIENT_LIB_DIR=/opt/homebrew/opt/mysql@8.4/lib" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_INCLUDE_DIR=/opt/homebrew/opt/mysql@8.4/include/mysql" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=8.4" >> $GITHUB_ENV
 
       - name: Install MariaDB latest (MacOS M1)
         if: matrix.os == 'macos-14' && matrix.target == 'mariadb'
@@ -138,7 +138,7 @@ jobs:
         if: runner.os == 'Windows' && matrix.target == 'mariadb' && matrix.install != 'vcpkg'
         shell: cmd
         run: |
-          curl -L https://ftp.osuosl.org/pub/mariadb/mariadb-11.4.2/winx64-packages/mariadb-11.4.2-winx64.zip -o library.zip
+          curl -L https://ftp.osuosl.org/pub/mariadb/mariadb-11.5.2/winx64-packages/mariadb-11.5.2-winx64.zip -o library.zip
           unzip library.zip
 
       - name: Install ${{ matrix.target }} (Windows vcpkg)
@@ -158,7 +158,7 @@ jobs:
         if: runner.os == 'Windows' && matrix.target == 'mariadb' && matrix.install == 'vcpkg'
         shell: bash
         run: |
-          echo "MYSQLCLIENT_VERSION=11.4" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=11.5" >> $GITHUB_ENV
 
       - name: Set variables for mysql (Windows)
         if: runner.os == 'Windows' && matrix.target == 'mysql' &&  matrix.features != 'bundled' && matrix.install != 'vcpkg'
@@ -174,12 +174,12 @@ jobs:
         if: runner.os == 'Windows' && matrix.target == 'mariadb' && matrix.install != 'vcpkg'
         shell: bash
         run: |
-          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/lib/" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_INCLUDE_DIR=${{github.workspace}}/mariadb-11.4.2-winx64/include/mysql/" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_VERSION=11.4.2" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.5.2-winx64/lib/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_INCLUDE_DIR=${{github.workspace}}/mariadb-11.5.2-winx64/include/mysql/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_VERSION=11.5.2" >> $GITHUB_ENV
           echo "MYSQLCLIENT_LIBNAME=mariadbclient" >> $GITHUB_ENV
-          dir ./mariadb-11.4.2-winx64/lib
-          dir ./mariadb-11.4.2-winx64/include
+          dir ./mariadb-11.5.2-winx64/lib
+          dir ./mariadb-11.5.2-winx64/include
 
       - name: Windows setup (bundled)
         if: runner.os == 'Windows' && matrix.features == 'bundled'

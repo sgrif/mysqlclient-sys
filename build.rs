@@ -116,7 +116,7 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
         .next()
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 enum MysqlVersion {
     Mysql5,
     Mysql80,
@@ -153,13 +153,13 @@ impl MysqlVersion {
         // libmariadb-dev 3.3.8 -> mariadb 10.x
         // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
         // major.
-        if version.starts_with("5.7.") || version.starts_with("20.") || version == "20" {
+        if version.starts_with("5.7") || version.starts_with("20.") || version == "20" {
             Some(Self::Mysql5)
-        } else if version.starts_with("8.0.") || version.starts_with("21.") || version == "21" {
+        } else if version.starts_with("8.0") || version.starts_with("21.") || version == "21" {
             Some(Self::Mysql80)
-        } else if version.starts_with("8.3.") || version.starts_with("23.") || version == "23" {
+        } else if version.starts_with("8.3") || version.starts_with("23.") || version == "23" {
             Some(Self::Mysql83)
-        } else if version.starts_with("8.4.") || version.starts_with("24.") || version == "24" {
+        } else if version.starts_with("8.4") || version.starts_with("24.") || version == "24" {
             Some(Self::Mysql84)
         } else if version.starts_with("10.")
             || version.starts_with("11.")
@@ -222,7 +222,8 @@ fn parse_version(version_str: &str) {
                 "mysqlclient-sys does not provide bundled bindings for libmysqlclient `{version_str}` \
                  for the target `{}`.
                  Consider using the `buildtime_bindgen` feature or \
-                 contribute bindings to the crate",
+                 contribute bindings to the crate\n\
+                 Debug information: (version: {version:?}, target_arch: {target_arch}, ptr_size: {ptr_size})",
                 std::env::var("TARGET").expect("Set by cargo")
             )
         }
