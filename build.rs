@@ -11,7 +11,7 @@ const VCPKG_MARIADB_LIB: &str = "libmariadb";
 
 fn main() {
     if cfg!(feature = "bundled") {
-        parse_version("8.4.0");
+        parse_version("9.0.1");
         return;
     }
     let target = std::env::var("TARGET")
@@ -122,6 +122,7 @@ enum MysqlVersion {
     Mysql80,
     Mysql83,
     Mysql84,
+    Mysql90,
     MariaDb10,
 }
 
@@ -131,6 +132,7 @@ impl MysqlVersion {
         Self::Mysql80,
         Self::Mysql83,
         Self::Mysql84,
+        Self::Mysql90,
         Self::MariaDb10,
     ];
 
@@ -140,6 +142,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql80 => "mysql_8_0_x",
             MysqlVersion::Mysql83 => "mysql_8_3_x",
             MysqlVersion::Mysql84 => "mysql_8_4_x",
+            MysqlVersion::Mysql90 => "mysql_9_0_x",
             MysqlVersion::MariaDb10 => "mariadb_10_x",
         }
     }
@@ -149,7 +152,7 @@ impl MysqlVersion {
         // libmysqlclient20 -> 5.7.x
         // libmysqlclient21 -> 8.0.x
         // libmysqlclient23 -> 8.3.0
-        // libmysqlclient24 -> 8.4.0
+        // libmysqlclient24 -> 8.4.0 or 9.0
         // libmariadb-dev 3.3.8 -> mariadb 10.x
         // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
         // major.
@@ -159,8 +162,10 @@ impl MysqlVersion {
             Some(Self::Mysql80)
         } else if version.starts_with("8.3") || version.starts_with("23.") || version == "23" {
             Some(Self::Mysql83)
-        } else if version.starts_with("8.4") || version.starts_with("24.") || version == "24" {
+        } else if version.starts_with("8.4") || version.starts_with("24.0") || version == "24" {
             Some(Self::Mysql84)
+        } else if version.starts_with("9.0") || version.starts_with("24.1") {
+            Some(Self::Mysql90)
         } else if version.starts_with("10.")
             || version.starts_with("11.")
             || version.starts_with("3.")
@@ -210,6 +215,10 @@ fn parse_version(version_str: &str) {
         (Some(Mysql84), "x86" | "arm", "32", false) => "bindings_8_4_0_i686_linux.rs",
         (Some(Mysql84), "x86_64", "64", true) => "bindings_8_4_0_x86_64_windows.rs",
         (Some(Mysql84), "x86", "32", true) => "bindings_8_4_0_i686_windows.rs",
+        (Some(Mysql90), "x86_64" | "aarch64", "64", false) => "bindings_9_0_1_x86_64_linux.rs",
+        (Some(Mysql90), "x86" | "arm", "32", false) => "bindings_9_0_1_i686_linux.rs",
+        (Some(Mysql90), "x86_64", "64", true) => "bindings_9_0_1_x86_64_windows.rs",
+        (Some(Mysql90), "x86", "32", true) => "bindings_9_0_1_i686_windows.rs",
         (Some(MariaDb10), "x86_64" | "aarch64", "64", false) => {
             "bindings_mariadb_10_11_x86_64_linux.rs"
         }
