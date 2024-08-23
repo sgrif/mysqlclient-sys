@@ -3,6 +3,13 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.1] 2024-08-23
+
+## Added
+
+* Added support for libmysqlclient 9.0.x
+* Updated the bundled libmysqlclient version to 9.0.1
+
 ## [0.4.0] 2024-06-13
 
 ## Changed 
