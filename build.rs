@@ -47,6 +47,10 @@ fn main() {
     if let Ok(lib) = pkg_config::probe_library(PKG_CONFIG_MYSQL_LIB)
         .or_else(|_| pkg_config::probe_library(PKG_CONFIG_MARIADB_LIB))
     {
+        // rebuild if users upgraded the mysql library on their machine
+        for link in lib.link_paths {
+            println!("cargo::rerun-if-changed={}", link.display());
+        }
         // pkg_config did everything but the version flags for us
         parse_version(&lib.version);
         return;
