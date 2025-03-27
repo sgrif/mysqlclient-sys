@@ -73,6 +73,9 @@ fn main() {
             parse_version(&version);
             return;
         }
+        if env::var("CARGO_CFG_WINDOWS").is_ok() {
+            println!("cargo:rustc-link-lib=advapi32");
+        }
     } else if let Some(output) = mysql_config_variable("--libs") {
         let parts = output.split_ascii_whitespace();
         for part in parts {
