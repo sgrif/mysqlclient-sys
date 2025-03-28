@@ -11,7 +11,7 @@ const VCPKG_MARIADB_LIB: &str = "libmariadb";
 
 fn main() {
     if cfg!(feature = "bundled") {
-        parse_version("9.0.1");
+        parse_version("9.2.0");
         return;
     }
     let target = std::env::var("TARGET")

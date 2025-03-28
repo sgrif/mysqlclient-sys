@@ -59,6 +59,11 @@ jobs:
           sudo systemctl start mysql.service
           sudo apt-get update
           sudo apt-get -y install libmysqlclient-dev
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux' && matrix.features == 'bundled'
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libtirpc-dev
 
       - name: Install MariaDB Client Libs and Server (Linux)
         if: runner.os == 'Linux' && matrix.target == 'mariadb'
