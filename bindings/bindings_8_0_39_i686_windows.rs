@@ -10,18 +10,16 @@ pub const MYSQL_CLIENT_reserved1: u32 = 0;
 pub const MYSQL_CLIENT_reserved2: u32 = 1;
 pub const MYSQL_CLIENT_AUTHENTICATION_PLUGIN: u32 = 2;
 pub const MYSQL_CLIENT_TRACE_PLUGIN: u32 = 3;
-pub const MYSQL_CLIENT_TELEMETRY_PLUGIN: u32 = 4;
 pub const MYSQL_CLIENT_AUTHENTICATION_PLUGIN_INTERFACE_VERSION: u32 = 512;
 pub const MYSQL_CLIENT_TRACE_PLUGIN_INTERFACE_VERSION: u32 = 512;
-pub const MYSQL_CLIENT_TELEMETRY_PLUGIN_INTERFACE_VERSION: u32 = 512;
-pub const MYSQL_CLIENT_MAX_PLUGINS: u32 = 5;
+pub const MYSQL_CLIENT_MAX_PLUGINS: u32 = 4;
 pub const MYSQL_CLIENT_PLUGIN_AUTHOR_ORACLE: &[u8; 19] = b"Oracle Corporation\0";
 pub const MYSQL_USERNAME_LENGTH: u32 = 96;
-pub const MYSQL_SERVER_VERSION: &[u8; 6] = b"8.3.0\0";
-pub const MYSQL_BASE_VERSION: &[u8; 11] = b"mysqld-8.3\0";
+pub const MYSQL_SERVER_VERSION: &[u8; 7] = b"8.0.39\0";
+pub const MYSQL_BASE_VERSION: &[u8; 11] = b"mysqld-8.0\0";
 pub const MYSQL_SERVER_SUFFIX_DEF: &[u8; 1] = b"\0";
-pub const MYSQL_VERSION_ID: u32 = 80300;
-pub const MYSQL_VERSION_STABILITY: &[u8; 11] = b"INNOVATION\0";
+pub const MYSQL_VERSION_ID: u32 = 80039;
+pub const MYSQL_VERSION_STABILITY: &[u8; 4] = b"LTS\0";
 pub const MYSQL_PORT: u32 = 3306;
 pub const MYSQL_ADMIN_PORT: u32 = 33062;
 pub const MYSQL_PORT_DEFAULT: u32 = 0;
@@ -32,8 +30,6 @@ pub const MYSQL_COMPILATION_COMMENT: &[u8; 22] = b"MySQL Community - GPL\0";
 pub const MYSQL_COMPILATION_COMMENT_SERVER: &[u8; 29] = b"MySQL Community Server - GPL\0";
 pub const MYSQL_RPL_GTID: u32 = 65536;
 pub const MYSQL_RPL_SKIP_HEARTBEAT: u32 = 131072;
-pub const MYSQL_RPL_SKIP_TAGGED_GTIDS: u32 = 4;
-pub const MYSQL_TAGGED_GTIDS_VERSION_SUPPORT: u32 = 80300;
 pub const MYSQL_NO_DATA: u32 = 100;
 pub const MYSQL_DATA_TRUNCATED: u32 = 101;
 pub type __gnuc_va_list = __builtin_va_list;
@@ -43,7 +39,7 @@ pub type HANDLE = *mut ::std::os::raw::c_void;
 pub type SOCKET = UINT_PTR;
 #[repr(u32)]
 #[non_exhaustive]
-#[doc = "Column types for MySQL\nNote: Keep include/mysql/components/services/bits/stored_program_bits.h in\nsync with this"]
+#[doc = "Column types for MySQL"]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum enum_field_types {
     MYSQL_TYPE_DECIMAL = 0,
@@ -358,60 +354,6 @@ unsafe extern "C" {
         mysql_errno: ::std::os::raw::c_uint,
     ) -> *const ::std::os::raw::c_char;
 }
-#[repr(u32)]
-#[non_exhaustive]
-#[doc = "Describes the current state of Asynchronous connection phase state machine\n\n@startuml\n[*] --> CONNECT_STAGE_INVALID\n[*] --> CONNECT_STAGE_NOT_STARTED\n\nCONNECT_STAGE_NOT_STARTED --> CONNECT_STAGE_NET_BEGIN_CONNECT\nCONNECT_STAGE_NOT_STARTED --> CONNECT_STAGE_COMPLETE\n\nCONNECT_STAGE_NET_BEGIN_CONNECT --> CONNECT_STAGE_NET_WAIT_CONNECT\nCONNECT_STAGE_NET_BEGIN_CONNECT --> CONNECT_STAGE_NET_COMPLETE_CONNECT\nCONNECT_STAGE_NET_BEGIN_CONNECT --> STATE_MACHINE_FAILED\n\nCONNECT_STAGE_NET_WAIT_CONNECT --> CONNECT_STAGE_NET_COMPLETE_CONNECT\nCONNECT_STAGE_NET_WAIT_CONNECT --> STATE_MACHINE_FAILED\n\nCONNECT_STAGE_NET_COMPLETE_CONNECT --> STATE_MACHINE_FAILED\nCONNECT_STAGE_NET_COMPLETE_CONNECT --> CONNECT_STAGE_READ_GREETING\n\nCONNECT_STAGE_READ_GREETING --> STATE_MACHINE_FAILED\nCONNECT_STAGE_READ_GREETING --> CONNECT_STAGE_PARSE_HANDSHAKE\n\nCONNECT_STAGE_PARSE_HANDSHAKE --> STATE_MACHINE_FAILED\nCONNECT_STAGE_PARSE_HANDSHAKE --> CONNECT_STAGE_ESTABLISH_SSL\n\nCONNECT_STAGE_ESTABLISH_SSL --> STATE_MACHINE_FAILED\nCONNECT_STAGE_ESTABLISH_SSL --> CONNECT_STAGE_AUTHENTICATE\n\nCONNECT_STAGE_AUTHENTICATE --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTHENTICATE --> CONNECT_STAGE_AUTH_BEGIN\n\nCONNECT_STAGE_AUTH_BEGIN --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_BEGIN --> CONNECT_STAGE_AUTH_RUN_FIRST_AUTHENTICATE_USER\n\nCONNECT_STAGE_AUTH_RUN_FIRST_AUTHENTICATE_USER --> CONNECT_STAGE_AUTH_HANDLE_FIRST_AUTHENTICATE_USER\n\nCONNECT_STAGE_AUTH_HANDLE_FIRST_AUTHENTICATE_USER --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_HANDLE_FIRST_AUTHENTICATE_USER --> CONNECT_STAGE_AUTH_READ_CHANGE_USER_RESULT\n\nCONNECT_STAGE_AUTH_READ_CHANGE_USER_RESULT --> CONNECT_STAGE_AUTH_HANDLE_CHANGE_USER_REQUEST\n\nCONNECT_STAGE_AUTH_HANDLE_CHANGE_USER_REQUEST --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_HANDLE_CHANGE_USER_REQUEST --> CONNECT_STAGE_AUTH_RUN_SECOND_AUTHENTICATE_USER\nCONNECT_STAGE_AUTH_HANDLE_CHANGE_USER_REQUEST --> CONNECT_STAGE_AUTH_INIT_MULTI_AUTH\nCONNECT_STAGE_AUTH_HANDLE_CHANGE_USER_REQUEST --> CONNECT_STAGE_AUTH_FINISH_AUTH\n\nCONNECT_STAGE_AUTH_RUN_SECOND_AUTHENTICATE_USER --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_RUN_SECOND_AUTHENTICATE_USER --> CONNECT_STAGE_AUTH_HANDLE_SECOND_AUTHENTICATE_USER\n\nCONNECT_STAGE_AUTH_HANDLE_SECOND_AUTHENTICATE_USER --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_HANDLE_SECOND_AUTHENTICATE_USER --> CONNECT_STAGE_AUTH_INIT_MULTI_AUTH\nCONNECT_STAGE_AUTH_HANDLE_SECOND_AUTHENTICATE_USER --> CONNECT_STAGE_AUTH_FINISH_AUTH\n\nCONNECT_STAGE_AUTH_INIT_MULTI_AUTH --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_INIT_MULTI_AUTH --> CONNECT_STAGE_AUTH_DO_MULTI_PLUGIN_AUTH\n\nCONNECT_STAGE_AUTH_DO_MULTI_PLUGIN_AUTH --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_DO_MULTI_PLUGIN_AUTH --> CONNECT_STAGE_AUTH_HANDLE_MULTI_AUTH_RESPONSE\n\nCONNECT_STAGE_AUTH_HANDLE_MULTI_AUTH_RESPONSE --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_HANDLE_MULTI_AUTH_RESPONSE --> CONNECT_STAGE_AUTH_INIT_MULTI_AUTH\nCONNECT_STAGE_AUTH_HANDLE_MULTI_AUTH_RESPONSE --> CONNECT_STAGE_AUTH_FINISH_AUTH\n\nCONNECT_STAGE_AUTH_FINISH_AUTH --> STATE_MACHINE_FAILED\nCONNECT_STAGE_AUTH_FINISH_AUTH --> CONNECT_STAGE_PREP_SELECT_DATABASE\n\nCONNECT_STAGE_PREP_SELECT_DATABASE --> CONNECT_STAGE_COMPLETE\nCONNECT_STAGE_PREP_SELECT_DATABASE --> CONNECT_STAGE_PREP_INIT_COMMANDS\n\nCONNECT_STAGE_PREP_INIT_COMMANDS --> CONNECT_STAGE_COMPLETE\nCONNECT_STAGE_PREP_INIT_COMMANDS --> CONNECT_STAGE_SEND_ONE_INIT_COMMAND\n\nCONNECT_STAGE_SEND_ONE_INIT_COMMAND --> CONNECT_STAGE_SEND_ONE_INIT_COMMAND\nCONNECT_STAGE_SEND_ONE_INIT_COMMAND --> STATE_MACHINE_FAILED\nCONNECT_STAGE_SEND_ONE_INIT_COMMAND --> CONNECT_STAGE_COMPLETE\n\nSTATE_MACHINE_FAILED --> [*]\nCONNECT_STAGE_COMPLETE --> [*]\nCONNECT_STAGE_INVALID --> [*]\n@enduml"]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum connect_stage {
-    #[doc = " MYSQL not valid or an unknown state"]
-    CONNECT_STAGE_INVALID = 0,
-    #[doc = " not connected"]
-    CONNECT_STAGE_NOT_STARTED = 1,
-    #[doc = " begin connection to the server"]
-    CONNECT_STAGE_NET_BEGIN_CONNECT = 2,
-    #[doc = " wait for connection to be established"]
-    CONNECT_STAGE_NET_WAIT_CONNECT = 3,
-    #[doc = " init the local data structures post connect"]
-    CONNECT_STAGE_NET_COMPLETE_CONNECT = 4,
-    #[doc = " read the first packet"]
-    CONNECT_STAGE_READ_GREETING = 5,
-    #[doc = " parse the first packet"]
-    CONNECT_STAGE_PARSE_HANDSHAKE = 6,
-    #[doc = " tls establishment"]
-    CONNECT_STAGE_ESTABLISH_SSL = 7,
-    #[doc = " authentication phase"]
-    CONNECT_STAGE_AUTHENTICATE = 8,
-    #[doc = " determine the plugin to use"]
-    CONNECT_STAGE_AUTH_BEGIN = 9,
-    #[doc = " run first auth plugin"]
-    CONNECT_STAGE_AUTH_RUN_FIRST_AUTHENTICATE_USER = 10,
-    #[doc = " handle the result of the first auth plugin run"]
-    CONNECT_STAGE_AUTH_HANDLE_FIRST_AUTHENTICATE_USER = 11,
-    #[doc = " read the implied changed user auth, if any"]
-    CONNECT_STAGE_AUTH_READ_CHANGE_USER_RESULT = 12,
-    #[doc = " Check if server asked to use a different authentication plugin"]
-    CONNECT_STAGE_AUTH_HANDLE_CHANGE_USER_REQUEST = 13,
-    #[doc = " Start the authentication process again with the plugin which\nserver asked for"]
-    CONNECT_STAGE_AUTH_RUN_SECOND_AUTHENTICATE_USER = 14,
-    #[doc = " Start multi factor authentication"]
-    CONNECT_STAGE_AUTH_INIT_MULTI_AUTH = 15,
-    #[doc = " Final cleanup"]
-    CONNECT_STAGE_AUTH_FINISH_AUTH = 16,
-    #[doc = " Now read the results of the second plugin run"]
-    CONNECT_STAGE_AUTH_HANDLE_SECOND_AUTHENTICATE_USER = 17,
-    #[doc = " Invoke client plugins multi-auth authentication method"]
-    CONNECT_STAGE_AUTH_DO_MULTI_PLUGIN_AUTH = 18,
-    #[doc = " Handle response from client plugins authentication method"]
-    CONNECT_STAGE_AUTH_HANDLE_MULTI_AUTH_RESPONSE = 19,
-    #[doc = " Authenticated, set initial database if specified"]
-    CONNECT_STAGE_PREP_SELECT_DATABASE = 20,
-    #[doc = " Prepare to send a sequence of init commands."]
-    CONNECT_STAGE_PREP_INIT_COMMANDS = 21,
-    #[doc = " Send an init command.  This is called once per init command until\nthey've all been run (or a failure occurs)"]
-    CONNECT_STAGE_SEND_ONE_INIT_COMMAND = 22,
-    #[doc = " Connected or no async connect in progress"]
-    CONNECT_STAGE_COMPLETE = 23,
-}
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct st_mysql_client_plugin {
@@ -691,6 +633,7 @@ pub struct MYSQL_FIELD {
     pub org_table: *mut ::std::os::raw::c_char,
     pub db: *mut ::std::os::raw::c_char,
     pub catalog: *mut ::std::os::raw::c_char,
+    pub def: *mut ::std::os::raw::c_char,
     pub length: ::std::os::raw::c_ulong,
     pub max_length: ::std::os::raw::c_ulong,
     pub name_length: ::std::os::raw::c_uint,
@@ -699,6 +642,7 @@ pub struct MYSQL_FIELD {
     pub org_table_length: ::std::os::raw::c_uint,
     pub db_length: ::std::os::raw::c_uint,
     pub catalog_length: ::std::os::raw::c_uint,
+    pub def_length: ::std::os::raw::c_uint,
     pub flags: ::std::os::raw::c_uint,
     pub decimals: ::std::os::raw::c_uint,
     pub charsetnr: ::std::os::raw::c_uint,
@@ -707,7 +651,7 @@ pub struct MYSQL_FIELD {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of MYSQL_FIELD"][::std::mem::size_of::<MYSQL_FIELD>() - 76usize];
+    ["Size of MYSQL_FIELD"][::std::mem::size_of::<MYSQL_FIELD>() - 84usize];
     ["Alignment of MYSQL_FIELD"][::std::mem::align_of::<MYSQL_FIELD>() - 4usize];
     ["Offset of field: MYSQL_FIELD::name"][::std::mem::offset_of!(MYSQL_FIELD, name) - 0usize];
     ["Offset of field: MYSQL_FIELD::org_name"]
@@ -718,29 +662,32 @@ const _: () = {
     ["Offset of field: MYSQL_FIELD::db"][::std::mem::offset_of!(MYSQL_FIELD, db) - 16usize];
     ["Offset of field: MYSQL_FIELD::catalog"]
         [::std::mem::offset_of!(MYSQL_FIELD, catalog) - 20usize];
-    ["Offset of field: MYSQL_FIELD::length"][::std::mem::offset_of!(MYSQL_FIELD, length) - 24usize];
+    ["Offset of field: MYSQL_FIELD::def"][::std::mem::offset_of!(MYSQL_FIELD, def) - 24usize];
+    ["Offset of field: MYSQL_FIELD::length"][::std::mem::offset_of!(MYSQL_FIELD, length) - 28usize];
     ["Offset of field: MYSQL_FIELD::max_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, max_length) - 28usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, max_length) - 32usize];
     ["Offset of field: MYSQL_FIELD::name_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, name_length) - 32usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, name_length) - 36usize];
     ["Offset of field: MYSQL_FIELD::org_name_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, org_name_length) - 36usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, org_name_length) - 40usize];
     ["Offset of field: MYSQL_FIELD::table_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, table_length) - 40usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, table_length) - 44usize];
     ["Offset of field: MYSQL_FIELD::org_table_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, org_table_length) - 44usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, org_table_length) - 48usize];
     ["Offset of field: MYSQL_FIELD::db_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, db_length) - 48usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, db_length) - 52usize];
     ["Offset of field: MYSQL_FIELD::catalog_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, catalog_length) - 52usize];
-    ["Offset of field: MYSQL_FIELD::flags"][::std::mem::offset_of!(MYSQL_FIELD, flags) - 56usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, catalog_length) - 56usize];
+    ["Offset of field: MYSQL_FIELD::def_length"]
+        [::std::mem::offset_of!(MYSQL_FIELD, def_length) - 60usize];
+    ["Offset of field: MYSQL_FIELD::flags"][::std::mem::offset_of!(MYSQL_FIELD, flags) - 64usize];
     ["Offset of field: MYSQL_FIELD::decimals"]
-        [::std::mem::offset_of!(MYSQL_FIELD, decimals) - 60usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, decimals) - 68usize];
     ["Offset of field: MYSQL_FIELD::charsetnr"]
-        [::std::mem::offset_of!(MYSQL_FIELD, charsetnr) - 64usize];
-    ["Offset of field: MYSQL_FIELD::type_"][::std::mem::offset_of!(MYSQL_FIELD, type_) - 68usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, charsetnr) - 72usize];
+    ["Offset of field: MYSQL_FIELD::type_"][::std::mem::offset_of!(MYSQL_FIELD, type_) - 76usize];
     ["Offset of field: MYSQL_FIELD::extension"]
-        [::std::mem::offset_of!(MYSQL_FIELD, extension) - 72usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, extension) - 80usize];
 };
 pub type MYSQL_ROW = *mut *mut ::std::os::raw::c_char;
 pub type MYSQL_FIELD_OFFSET = ::std::os::raw::c_uint;
@@ -832,7 +779,6 @@ pub enum mysql_option {
     MYSQL_OPT_LOAD_DATA_LOCAL_DIR = 43,
     MYSQL_OPT_USER_PASSWORD = 44,
     MYSQL_OPT_SSL_SESSION_DATA = 45,
-    MYSQL_OPT_TLS_SNI_SERVERNAME = 46,
 }
 #[doc = "@todo remove the \"extension\", move st_mysql_options completely\nout of mysql.h"]
 #[repr(C)]
@@ -1314,6 +1260,16 @@ unsafe extern "stdcall" {
     pub fn mysql_init(mysql: *mut MYSQL) -> *mut MYSQL;
 }
 unsafe extern "stdcall" {
+    pub fn mysql_ssl_set(
+        mysql: *mut MYSQL,
+        key: *const ::std::os::raw::c_char,
+        cert: *const ::std::os::raw::c_char,
+        ca: *const ::std::os::raw::c_char,
+        capath: *const ::std::os::raw::c_char,
+        cipher: *const ::std::os::raw::c_char,
+    ) -> bool;
+}
+unsafe extern "stdcall" {
     pub fn mysql_get_ssl_cipher(mysql: *mut MYSQL) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "stdcall" {
@@ -1479,7 +1435,22 @@ unsafe extern "C" {
     pub fn mysql_set_local_infile_default(mysql: *mut MYSQL);
 }
 unsafe extern "stdcall" {
+    pub fn mysql_shutdown(
+        mysql: *mut MYSQL,
+        shutdown_level: mysql_enum_shutdown_level,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "stdcall" {
     pub fn mysql_dump_debug_info(mysql: *mut MYSQL) -> ::std::os::raw::c_int;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_refresh(
+        mysql: *mut MYSQL,
+        refresh_options: ::std::os::raw::c_uint,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_kill(mysql: *mut MYSQL, pid: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "stdcall" {
     pub fn mysql_set_server_option(
@@ -1520,6 +1491,9 @@ unsafe extern "stdcall" {
         mysql: *mut MYSQL,
         wild: *const ::std::os::raw::c_char,
     ) -> *mut MYSQL_RES;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_list_processes(mysql: *mut MYSQL) -> *mut MYSQL_RES;
 }
 unsafe extern "stdcall" {
     pub fn mysql_options(
@@ -1577,6 +1551,13 @@ unsafe extern "stdcall" {
     pub fn mysql_fetch_field(result: *mut MYSQL_RES) -> *mut MYSQL_FIELD;
 }
 unsafe extern "stdcall" {
+    pub fn mysql_list_fields(
+        mysql: *mut MYSQL,
+        table: *const ::std::os::raw::c_char,
+        wild: *const ::std::os::raw::c_char,
+    ) -> *mut MYSQL_RES;
+}
+unsafe extern "stdcall" {
     pub fn mysql_escape_string(
         to: *mut ::std::os::raw::c_char,
         from: *const ::std::os::raw::c_char,
@@ -1618,9 +1599,6 @@ unsafe extern "stdcall" {
 }
 unsafe extern "stdcall" {
     pub fn mysql_reset_connection(mysql: *mut MYSQL) -> ::std::os::raw::c_int;
-}
-unsafe extern "stdcall" {
-    pub fn mysql_reset_connection_nonblocking(mysql: *mut MYSQL) -> net_async_status;
 }
 unsafe extern "stdcall" {
     pub fn mysql_binlog_open(mysql: *mut MYSQL, rpl: *mut MYSQL_RPL) -> ::std::os::raw::c_int;
@@ -1868,14 +1846,6 @@ unsafe extern "stdcall" {
     pub fn mysql_stmt_bind_param(stmt: *mut MYSQL_STMT, bnd: *mut MYSQL_BIND) -> bool;
 }
 unsafe extern "stdcall" {
-    pub fn mysql_stmt_bind_named_param(
-        stmt: *mut MYSQL_STMT,
-        binds: *mut MYSQL_BIND,
-        n_params: ::std::os::raw::c_uint,
-        names: *mut *const ::std::os::raw::c_char,
-    ) -> bool;
-}
-unsafe extern "stdcall" {
     pub fn mysql_stmt_bind_result(stmt: *mut MYSQL_STMT, bnd: *mut MYSQL_BIND) -> bool;
 }
 unsafe extern "stdcall" {
@@ -1965,9 +1935,6 @@ unsafe extern "stdcall" {
         db: *const ::std::os::raw::c_char,
         client_flag: ::std::os::raw::c_ulong,
     ) -> *mut MYSQL;
-}
-unsafe extern "stdcall" {
-    pub fn mysql_get_connect_nonblocking_stage(mysql: *mut MYSQL) -> connect_stage;
 }
 pub type __builtin_va_list = *mut ::std::os::raw::c_char;
 #[repr(C)]

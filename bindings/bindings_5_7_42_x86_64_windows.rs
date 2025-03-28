@@ -10,6 +10,8 @@ pub const MYSQL_UNIX_ADDR: &[u8; 28] = b"/var/run/mysqld/mysqld.sock\0";
 pub const MYSQL_CONFIG_NAME: &[u8; 3] = b"my\0";
 pub const MYSQL_COMPILATION_COMMENT: &[u8; 29] = b"MySQL Community Server (GPL)\0";
 pub const MYSQL_AUTODETECT_CHARSET_NAME: &[u8; 5] = b"auto\0";
+pub const MYSQL_NAMEDPIPE: &[u8; 6] = b"MySQL\0";
+pub const MYSQL_SERVICENAME: &[u8; 6] = b"MySQL\0";
 pub const MYSQL_ERRMSG_SIZE: u32 = 512;
 pub const MYSQL_STMT_HEADER: u32 = 4;
 pub const MYSQL_LONG_DATA_HEADER: u32 = 6;
@@ -23,8 +25,12 @@ pub const MYSQL_CLIENT_MAX_PLUGINS: u32 = 4;
 pub const MYSQL_USERNAME_LENGTH: u32 = 96;
 pub const MYSQL_NO_DATA: u32 = 100;
 pub const MYSQL_DATA_TRUNCATED: u32 = 101;
+pub type __gnuc_va_list = __builtin_va_list;
+pub type va_list = __gnuc_va_list;
 pub type my_bool = ::std::os::raw::c_char;
-pub type my_socket = ::std::os::raw::c_int;
+pub type UINT_PTR = ::std::os::raw::c_ulonglong;
+pub type HANDLE = *mut ::std::os::raw::c_void;
+pub type SOCKET = UINT_PTR;
 #[repr(u32)]
 #[non_exhaustive]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
@@ -75,7 +81,7 @@ pub struct st_net {
     pub buff_end: *mut ::std::os::raw::c_uchar,
     pub write_pos: *mut ::std::os::raw::c_uchar,
     pub read_pos: *mut ::std::os::raw::c_uchar,
-    pub fd: my_socket,
+    pub fd: SOCKET,
     pub remain_in_buf: ::std::os::raw::c_ulong,
     pub length: ::std::os::raw::c_ulong,
     pub buf_length: ::std::os::raw::c_ulong,
@@ -109,7 +115,7 @@ pub struct st_net {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_net"][::std::mem::size_of::<st_net>() - 680usize];
+    ["Size of st_net"][::std::mem::size_of::<st_net>() - 656usize];
     ["Alignment of st_net"][::std::mem::align_of::<st_net>() - 8usize];
     ["Offset of field: st_net::vio"][::std::mem::offset_of!(st_net, vio) - 0usize];
     ["Offset of field: st_net::buff"][::std::mem::offset_of!(st_net, buff) - 8usize];
@@ -119,39 +125,38 @@ const _: () = {
     ["Offset of field: st_net::fd"][::std::mem::offset_of!(st_net, fd) - 40usize];
     ["Offset of field: st_net::remain_in_buf"]
         [::std::mem::offset_of!(st_net, remain_in_buf) - 48usize];
-    ["Offset of field: st_net::length"][::std::mem::offset_of!(st_net, length) - 56usize];
-    ["Offset of field: st_net::buf_length"][::std::mem::offset_of!(st_net, buf_length) - 64usize];
-    ["Offset of field: st_net::where_b"][::std::mem::offset_of!(st_net, where_b) - 72usize];
-    ["Offset of field: st_net::max_packet"][::std::mem::offset_of!(st_net, max_packet) - 80usize];
+    ["Offset of field: st_net::length"][::std::mem::offset_of!(st_net, length) - 52usize];
+    ["Offset of field: st_net::buf_length"][::std::mem::offset_of!(st_net, buf_length) - 56usize];
+    ["Offset of field: st_net::where_b"][::std::mem::offset_of!(st_net, where_b) - 60usize];
+    ["Offset of field: st_net::max_packet"][::std::mem::offset_of!(st_net, max_packet) - 64usize];
     ["Offset of field: st_net::max_packet_size"]
-        [::std::mem::offset_of!(st_net, max_packet_size) - 88usize];
-    ["Offset of field: st_net::pkt_nr"][::std::mem::offset_of!(st_net, pkt_nr) - 96usize];
+        [::std::mem::offset_of!(st_net, max_packet_size) - 68usize];
+    ["Offset of field: st_net::pkt_nr"][::std::mem::offset_of!(st_net, pkt_nr) - 72usize];
     ["Offset of field: st_net::compress_pkt_nr"]
-        [::std::mem::offset_of!(st_net, compress_pkt_nr) - 100usize];
+        [::std::mem::offset_of!(st_net, compress_pkt_nr) - 76usize];
     ["Offset of field: st_net::write_timeout"]
-        [::std::mem::offset_of!(st_net, write_timeout) - 104usize];
+        [::std::mem::offset_of!(st_net, write_timeout) - 80usize];
     ["Offset of field: st_net::read_timeout"]
-        [::std::mem::offset_of!(st_net, read_timeout) - 108usize];
-    ["Offset of field: st_net::retry_count"]
-        [::std::mem::offset_of!(st_net, retry_count) - 112usize];
-    ["Offset of field: st_net::fcntl"][::std::mem::offset_of!(st_net, fcntl) - 116usize];
+        [::std::mem::offset_of!(st_net, read_timeout) - 84usize];
+    ["Offset of field: st_net::retry_count"][::std::mem::offset_of!(st_net, retry_count) - 88usize];
+    ["Offset of field: st_net::fcntl"][::std::mem::offset_of!(st_net, fcntl) - 92usize];
     ["Offset of field: st_net::return_status"]
-        [::std::mem::offset_of!(st_net, return_status) - 120usize];
+        [::std::mem::offset_of!(st_net, return_status) - 96usize];
     ["Offset of field: st_net::reading_or_writing"]
-        [::std::mem::offset_of!(st_net, reading_or_writing) - 128usize];
-    ["Offset of field: st_net::save_char"][::std::mem::offset_of!(st_net, save_char) - 129usize];
-    ["Offset of field: st_net::unused1"][::std::mem::offset_of!(st_net, unused1) - 130usize];
-    ["Offset of field: st_net::unused2"][::std::mem::offset_of!(st_net, unused2) - 131usize];
-    ["Offset of field: st_net::compress"][::std::mem::offset_of!(st_net, compress) - 132usize];
-    ["Offset of field: st_net::unused3"][::std::mem::offset_of!(st_net, unused3) - 133usize];
-    ["Offset of field: st_net::unused"][::std::mem::offset_of!(st_net, unused) - 136usize];
-    ["Offset of field: st_net::last_errno"][::std::mem::offset_of!(st_net, last_errno) - 144usize];
-    ["Offset of field: st_net::error"][::std::mem::offset_of!(st_net, error) - 148usize];
-    ["Offset of field: st_net::unused4"][::std::mem::offset_of!(st_net, unused4) - 149usize];
-    ["Offset of field: st_net::unused5"][::std::mem::offset_of!(st_net, unused5) - 150usize];
-    ["Offset of field: st_net::last_error"][::std::mem::offset_of!(st_net, last_error) - 151usize];
-    ["Offset of field: st_net::sqlstate"][::std::mem::offset_of!(st_net, sqlstate) - 663usize];
-    ["Offset of field: st_net::extension"][::std::mem::offset_of!(st_net, extension) - 672usize];
+        [::std::mem::offset_of!(st_net, reading_or_writing) - 104usize];
+    ["Offset of field: st_net::save_char"][::std::mem::offset_of!(st_net, save_char) - 105usize];
+    ["Offset of field: st_net::unused1"][::std::mem::offset_of!(st_net, unused1) - 106usize];
+    ["Offset of field: st_net::unused2"][::std::mem::offset_of!(st_net, unused2) - 107usize];
+    ["Offset of field: st_net::compress"][::std::mem::offset_of!(st_net, compress) - 108usize];
+    ["Offset of field: st_net::unused3"][::std::mem::offset_of!(st_net, unused3) - 109usize];
+    ["Offset of field: st_net::unused"][::std::mem::offset_of!(st_net, unused) - 112usize];
+    ["Offset of field: st_net::last_errno"][::std::mem::offset_of!(st_net, last_errno) - 120usize];
+    ["Offset of field: st_net::error"][::std::mem::offset_of!(st_net, error) - 124usize];
+    ["Offset of field: st_net::unused4"][::std::mem::offset_of!(st_net, unused4) - 125usize];
+    ["Offset of field: st_net::unused5"][::std::mem::offset_of!(st_net, unused5) - 126usize];
+    ["Offset of field: st_net::last_error"][::std::mem::offset_of!(st_net, last_error) - 127usize];
+    ["Offset of field: st_net::sqlstate"][::std::mem::offset_of!(st_net, sqlstate) - 639usize];
+    ["Offset of field: st_net::extension"][::std::mem::offset_of!(st_net, extension) - 648usize];
 };
 pub type NET = st_net;
 #[repr(u32)]
@@ -216,8 +221,8 @@ pub struct st_mysql_time {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql_time"][::std::mem::size_of::<st_mysql_time>() - 40usize];
-    ["Alignment of st_mysql_time"][::std::mem::align_of::<st_mysql_time>() - 8usize];
+    ["Size of st_mysql_time"][::std::mem::size_of::<st_mysql_time>() - 36usize];
+    ["Alignment of st_mysql_time"][::std::mem::align_of::<st_mysql_time>() - 4usize];
     ["Offset of field: st_mysql_time::year"][::std::mem::offset_of!(st_mysql_time, year) - 0usize];
     ["Offset of field: st_mysql_time::month"]
         [::std::mem::offset_of!(st_mysql_time, month) - 4usize];
@@ -229,9 +234,9 @@ const _: () = {
         [::std::mem::offset_of!(st_mysql_time, second) - 20usize];
     ["Offset of field: st_mysql_time::second_part"]
         [::std::mem::offset_of!(st_mysql_time, second_part) - 24usize];
-    ["Offset of field: st_mysql_time::neg"][::std::mem::offset_of!(st_mysql_time, neg) - 32usize];
+    ["Offset of field: st_mysql_time::neg"][::std::mem::offset_of!(st_mysql_time, neg) - 28usize];
     ["Offset of field: st_mysql_time::time_type"]
-        [::std::mem::offset_of!(st_mysql_time, time_type) - 36usize];
+        [::std::mem::offset_of!(st_mysql_time, time_type) - 32usize];
 };
 pub type MYSQL_TIME = st_mysql_time;
 #[repr(C)]
@@ -250,7 +255,6 @@ const _: () = {
     ["Offset of field: st_list::data"][::std::mem::offset_of!(st_list, data) - 16usize];
 };
 pub type LIST = st_list;
-pub type va_list = __builtin_va_list;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct st_mysql_client_plugin {
@@ -267,7 +271,7 @@ pub struct st_mysql_client_plugin {
             arg1: *mut ::std::os::raw::c_char,
             arg2: usize,
             arg3: ::std::os::raw::c_int,
-            arg4: *mut __va_list_tag,
+            arg4: va_list,
         ) -> ::std::os::raw::c_int,
     >,
     pub deinit: ::std::option::Option<unsafe extern "C" fn() -> ::std::os::raw::c_int>,
@@ -312,6 +316,8 @@ pub struct st_plugin_vio_info {
     pub protocol: st_plugin_vio_info__bindgen_ty_1,
     #[doc = "< it's set, if the protocol is SOCKET or TCP"]
     pub socket: ::std::os::raw::c_int,
+    #[doc = "< it's set, if the protocol is PIPE or MEMORY"]
+    pub handle: HANDLE,
 }
 pub const st_plugin_vio_info_MYSQL_VIO_INVALID: st_plugin_vio_info__bindgen_ty_1 =
     st_plugin_vio_info__bindgen_ty_1::MYSQL_VIO_INVALID;
@@ -335,12 +341,14 @@ pub enum st_plugin_vio_info__bindgen_ty_1 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_plugin_vio_info"][::std::mem::size_of::<st_plugin_vio_info>() - 8usize];
-    ["Alignment of st_plugin_vio_info"][::std::mem::align_of::<st_plugin_vio_info>() - 4usize];
+    ["Size of st_plugin_vio_info"][::std::mem::size_of::<st_plugin_vio_info>() - 16usize];
+    ["Alignment of st_plugin_vio_info"][::std::mem::align_of::<st_plugin_vio_info>() - 8usize];
     ["Offset of field: st_plugin_vio_info::protocol"]
         [::std::mem::offset_of!(st_plugin_vio_info, protocol) - 0usize];
     ["Offset of field: st_plugin_vio_info::socket"]
         [::std::mem::offset_of!(st_plugin_vio_info, socket) - 4usize];
+    ["Offset of field: st_plugin_vio_info::handle"]
+        [::std::mem::offset_of!(st_plugin_vio_info, handle) - 8usize];
 };
 pub type MYSQL_PLUGIN_VIO_INFO = st_plugin_vio_info;
 #[doc = "Provides plugin access to communication channel"]
@@ -396,7 +404,7 @@ unsafe extern "C" {
         name: *const ::std::os::raw::c_char,
         type_: ::std::os::raw::c_int,
         argc: ::std::os::raw::c_int,
-        args: *mut __va_list_tag,
+        args: va_list,
     ) -> *mut st_mysql_client_plugin;
 }
 unsafe extern "C" {
@@ -449,7 +457,7 @@ pub struct st_mysql_field {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql_field"][::std::mem::size_of::<st_mysql_field>() - 128usize];
+    ["Size of st_mysql_field"][::std::mem::size_of::<st_mysql_field>() - 120usize];
     ["Alignment of st_mysql_field"][::std::mem::align_of::<st_mysql_field>() - 8usize];
     ["Offset of field: st_mysql_field::name"]
         [::std::mem::offset_of!(st_mysql_field, name) - 0usize];
@@ -466,31 +474,31 @@ const _: () = {
     ["Offset of field: st_mysql_field::length"]
         [::std::mem::offset_of!(st_mysql_field, length) - 56usize];
     ["Offset of field: st_mysql_field::max_length"]
-        [::std::mem::offset_of!(st_mysql_field, max_length) - 64usize];
+        [::std::mem::offset_of!(st_mysql_field, max_length) - 60usize];
     ["Offset of field: st_mysql_field::name_length"]
-        [::std::mem::offset_of!(st_mysql_field, name_length) - 72usize];
+        [::std::mem::offset_of!(st_mysql_field, name_length) - 64usize];
     ["Offset of field: st_mysql_field::org_name_length"]
-        [::std::mem::offset_of!(st_mysql_field, org_name_length) - 76usize];
+        [::std::mem::offset_of!(st_mysql_field, org_name_length) - 68usize];
     ["Offset of field: st_mysql_field::table_length"]
-        [::std::mem::offset_of!(st_mysql_field, table_length) - 80usize];
+        [::std::mem::offset_of!(st_mysql_field, table_length) - 72usize];
     ["Offset of field: st_mysql_field::org_table_length"]
-        [::std::mem::offset_of!(st_mysql_field, org_table_length) - 84usize];
+        [::std::mem::offset_of!(st_mysql_field, org_table_length) - 76usize];
     ["Offset of field: st_mysql_field::db_length"]
-        [::std::mem::offset_of!(st_mysql_field, db_length) - 88usize];
+        [::std::mem::offset_of!(st_mysql_field, db_length) - 80usize];
     ["Offset of field: st_mysql_field::catalog_length"]
-        [::std::mem::offset_of!(st_mysql_field, catalog_length) - 92usize];
+        [::std::mem::offset_of!(st_mysql_field, catalog_length) - 84usize];
     ["Offset of field: st_mysql_field::def_length"]
-        [::std::mem::offset_of!(st_mysql_field, def_length) - 96usize];
+        [::std::mem::offset_of!(st_mysql_field, def_length) - 88usize];
     ["Offset of field: st_mysql_field::flags"]
-        [::std::mem::offset_of!(st_mysql_field, flags) - 100usize];
+        [::std::mem::offset_of!(st_mysql_field, flags) - 92usize];
     ["Offset of field: st_mysql_field::decimals"]
-        [::std::mem::offset_of!(st_mysql_field, decimals) - 104usize];
+        [::std::mem::offset_of!(st_mysql_field, decimals) - 96usize];
     ["Offset of field: st_mysql_field::charsetnr"]
-        [::std::mem::offset_of!(st_mysql_field, charsetnr) - 108usize];
+        [::std::mem::offset_of!(st_mysql_field, charsetnr) - 100usize];
     ["Offset of field: st_mysql_field::type_"]
-        [::std::mem::offset_of!(st_mysql_field, type_) - 112usize];
+        [::std::mem::offset_of!(st_mysql_field, type_) - 104usize];
     ["Offset of field: st_mysql_field::extension"]
-        [::std::mem::offset_of!(st_mysql_field, extension) - 120usize];
+        [::std::mem::offset_of!(st_mysql_field, extension) - 112usize];
 };
 pub type MYSQL_FIELD = st_mysql_field;
 pub type MYSQL_ROW = *mut *mut ::std::os::raw::c_char;
@@ -745,7 +753,7 @@ const _: () = {
 };
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql_options"][::std::mem::size_of::<st_mysql_options>() - 248usize];
+    ["Size of st_mysql_options"][::std::mem::size_of::<st_mysql_options>() - 232usize];
     ["Alignment of st_mysql_options"][::std::mem::align_of::<st_mysql_options>() - 8usize];
     ["Offset of field: st_mysql_options::connect_timeout"]
         [::std::mem::offset_of!(st_mysql_options, connect_timeout) - 0usize];
@@ -758,75 +766,75 @@ const _: () = {
     ["Offset of field: st_mysql_options::protocol"]
         [::std::mem::offset_of!(st_mysql_options, protocol) - 16usize];
     ["Offset of field: st_mysql_options::client_flag"]
-        [::std::mem::offset_of!(st_mysql_options, client_flag) - 24usize];
+        [::std::mem::offset_of!(st_mysql_options, client_flag) - 20usize];
     ["Offset of field: st_mysql_options::host"]
-        [::std::mem::offset_of!(st_mysql_options, host) - 32usize];
+        [::std::mem::offset_of!(st_mysql_options, host) - 24usize];
     ["Offset of field: st_mysql_options::user"]
-        [::std::mem::offset_of!(st_mysql_options, user) - 40usize];
+        [::std::mem::offset_of!(st_mysql_options, user) - 32usize];
     ["Offset of field: st_mysql_options::password"]
-        [::std::mem::offset_of!(st_mysql_options, password) - 48usize];
+        [::std::mem::offset_of!(st_mysql_options, password) - 40usize];
     ["Offset of field: st_mysql_options::unix_socket"]
-        [::std::mem::offset_of!(st_mysql_options, unix_socket) - 56usize];
+        [::std::mem::offset_of!(st_mysql_options, unix_socket) - 48usize];
     ["Offset of field: st_mysql_options::db"]
-        [::std::mem::offset_of!(st_mysql_options, db) - 64usize];
+        [::std::mem::offset_of!(st_mysql_options, db) - 56usize];
     ["Offset of field: st_mysql_options::init_commands"]
-        [::std::mem::offset_of!(st_mysql_options, init_commands) - 72usize];
+        [::std::mem::offset_of!(st_mysql_options, init_commands) - 64usize];
     ["Offset of field: st_mysql_options::my_cnf_file"]
-        [::std::mem::offset_of!(st_mysql_options, my_cnf_file) - 80usize];
+        [::std::mem::offset_of!(st_mysql_options, my_cnf_file) - 72usize];
     ["Offset of field: st_mysql_options::my_cnf_group"]
-        [::std::mem::offset_of!(st_mysql_options, my_cnf_group) - 88usize];
+        [::std::mem::offset_of!(st_mysql_options, my_cnf_group) - 80usize];
     ["Offset of field: st_mysql_options::charset_dir"]
-        [::std::mem::offset_of!(st_mysql_options, charset_dir) - 96usize];
+        [::std::mem::offset_of!(st_mysql_options, charset_dir) - 88usize];
     ["Offset of field: st_mysql_options::charset_name"]
-        [::std::mem::offset_of!(st_mysql_options, charset_name) - 104usize];
+        [::std::mem::offset_of!(st_mysql_options, charset_name) - 96usize];
     ["Offset of field: st_mysql_options::ssl_key"]
-        [::std::mem::offset_of!(st_mysql_options, ssl_key) - 112usize];
+        [::std::mem::offset_of!(st_mysql_options, ssl_key) - 104usize];
     ["Offset of field: st_mysql_options::ssl_cert"]
-        [::std::mem::offset_of!(st_mysql_options, ssl_cert) - 120usize];
+        [::std::mem::offset_of!(st_mysql_options, ssl_cert) - 112usize];
     ["Offset of field: st_mysql_options::ssl_ca"]
-        [::std::mem::offset_of!(st_mysql_options, ssl_ca) - 128usize];
+        [::std::mem::offset_of!(st_mysql_options, ssl_ca) - 120usize];
     ["Offset of field: st_mysql_options::ssl_capath"]
-        [::std::mem::offset_of!(st_mysql_options, ssl_capath) - 136usize];
+        [::std::mem::offset_of!(st_mysql_options, ssl_capath) - 128usize];
     ["Offset of field: st_mysql_options::ssl_cipher"]
-        [::std::mem::offset_of!(st_mysql_options, ssl_cipher) - 144usize];
+        [::std::mem::offset_of!(st_mysql_options, ssl_cipher) - 136usize];
     ["Offset of field: st_mysql_options::shared_memory_base_name"]
-        [::std::mem::offset_of!(st_mysql_options, shared_memory_base_name) - 152usize];
+        [::std::mem::offset_of!(st_mysql_options, shared_memory_base_name) - 144usize];
     ["Offset of field: st_mysql_options::max_allowed_packet"]
-        [::std::mem::offset_of!(st_mysql_options, max_allowed_packet) - 160usize];
+        [::std::mem::offset_of!(st_mysql_options, max_allowed_packet) - 152usize];
     ["Offset of field: st_mysql_options::use_ssl"]
-        [::std::mem::offset_of!(st_mysql_options, use_ssl) - 168usize];
+        [::std::mem::offset_of!(st_mysql_options, use_ssl) - 156usize];
     ["Offset of field: st_mysql_options::compress"]
-        [::std::mem::offset_of!(st_mysql_options, compress) - 169usize];
+        [::std::mem::offset_of!(st_mysql_options, compress) - 157usize];
     ["Offset of field: st_mysql_options::named_pipe"]
-        [::std::mem::offset_of!(st_mysql_options, named_pipe) - 170usize];
+        [::std::mem::offset_of!(st_mysql_options, named_pipe) - 158usize];
     ["Offset of field: st_mysql_options::unused1"]
-        [::std::mem::offset_of!(st_mysql_options, unused1) - 171usize];
+        [::std::mem::offset_of!(st_mysql_options, unused1) - 159usize];
     ["Offset of field: st_mysql_options::unused2"]
-        [::std::mem::offset_of!(st_mysql_options, unused2) - 172usize];
+        [::std::mem::offset_of!(st_mysql_options, unused2) - 160usize];
     ["Offset of field: st_mysql_options::unused3"]
-        [::std::mem::offset_of!(st_mysql_options, unused3) - 173usize];
+        [::std::mem::offset_of!(st_mysql_options, unused3) - 161usize];
     ["Offset of field: st_mysql_options::unused4"]
-        [::std::mem::offset_of!(st_mysql_options, unused4) - 174usize];
+        [::std::mem::offset_of!(st_mysql_options, unused4) - 162usize];
     ["Offset of field: st_mysql_options::methods_to_use"]
-        [::std::mem::offset_of!(st_mysql_options, methods_to_use) - 176usize];
+        [::std::mem::offset_of!(st_mysql_options, methods_to_use) - 164usize];
     ["Offset of field: st_mysql_options::ci"]
-        [::std::mem::offset_of!(st_mysql_options, ci) - 184usize];
+        [::std::mem::offset_of!(st_mysql_options, ci) - 168usize];
     ["Offset of field: st_mysql_options::unused5"]
-        [::std::mem::offset_of!(st_mysql_options, unused5) - 192usize];
+        [::std::mem::offset_of!(st_mysql_options, unused5) - 176usize];
     ["Offset of field: st_mysql_options::report_data_truncation"]
-        [::std::mem::offset_of!(st_mysql_options, report_data_truncation) - 193usize];
+        [::std::mem::offset_of!(st_mysql_options, report_data_truncation) - 177usize];
     ["Offset of field: st_mysql_options::local_infile_init"]
-        [::std::mem::offset_of!(st_mysql_options, local_infile_init) - 200usize];
+        [::std::mem::offset_of!(st_mysql_options, local_infile_init) - 184usize];
     ["Offset of field: st_mysql_options::local_infile_read"]
-        [::std::mem::offset_of!(st_mysql_options, local_infile_read) - 208usize];
+        [::std::mem::offset_of!(st_mysql_options, local_infile_read) - 192usize];
     ["Offset of field: st_mysql_options::local_infile_end"]
-        [::std::mem::offset_of!(st_mysql_options, local_infile_end) - 216usize];
+        [::std::mem::offset_of!(st_mysql_options, local_infile_end) - 200usize];
     ["Offset of field: st_mysql_options::local_infile_error"]
-        [::std::mem::offset_of!(st_mysql_options, local_infile_error) - 224usize];
+        [::std::mem::offset_of!(st_mysql_options, local_infile_error) - 208usize];
     ["Offset of field: st_mysql_options::local_infile_userdata"]
-        [::std::mem::offset_of!(st_mysql_options, local_infile_userdata) - 232usize];
+        [::std::mem::offset_of!(st_mysql_options, local_infile_userdata) - 216usize];
     ["Offset of field: st_mysql_options::extension"]
-        [::std::mem::offset_of!(st_mysql_options, extension) - 240usize];
+        [::std::mem::offset_of!(st_mysql_options, extension) - 224usize];
 };
 #[repr(u32)]
 #[non_exhaustive]
@@ -942,71 +950,71 @@ pub struct st_mysql {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql"][::std::mem::size_of::<st_mysql>() - 1304usize];
+    ["Size of st_mysql"][::std::mem::size_of::<st_mysql>() - 1240usize];
     ["Alignment of st_mysql"][::std::mem::align_of::<st_mysql>() - 8usize];
     ["Offset of field: st_mysql::net"][::std::mem::offset_of!(st_mysql, net) - 0usize];
     ["Offset of field: st_mysql::connector_fd"]
-        [::std::mem::offset_of!(st_mysql, connector_fd) - 680usize];
-    ["Offset of field: st_mysql::host"][::std::mem::offset_of!(st_mysql, host) - 688usize];
-    ["Offset of field: st_mysql::user"][::std::mem::offset_of!(st_mysql, user) - 696usize];
-    ["Offset of field: st_mysql::passwd"][::std::mem::offset_of!(st_mysql, passwd) - 704usize];
+        [::std::mem::offset_of!(st_mysql, connector_fd) - 656usize];
+    ["Offset of field: st_mysql::host"][::std::mem::offset_of!(st_mysql, host) - 664usize];
+    ["Offset of field: st_mysql::user"][::std::mem::offset_of!(st_mysql, user) - 672usize];
+    ["Offset of field: st_mysql::passwd"][::std::mem::offset_of!(st_mysql, passwd) - 680usize];
     ["Offset of field: st_mysql::unix_socket"]
-        [::std::mem::offset_of!(st_mysql, unix_socket) - 712usize];
+        [::std::mem::offset_of!(st_mysql, unix_socket) - 688usize];
     ["Offset of field: st_mysql::server_version"]
-        [::std::mem::offset_of!(st_mysql, server_version) - 720usize];
+        [::std::mem::offset_of!(st_mysql, server_version) - 696usize];
     ["Offset of field: st_mysql::host_info"]
-        [::std::mem::offset_of!(st_mysql, host_info) - 728usize];
-    ["Offset of field: st_mysql::info"][::std::mem::offset_of!(st_mysql, info) - 736usize];
-    ["Offset of field: st_mysql::db"][::std::mem::offset_of!(st_mysql, db) - 744usize];
-    ["Offset of field: st_mysql::charset"][::std::mem::offset_of!(st_mysql, charset) - 752usize];
-    ["Offset of field: st_mysql::fields"][::std::mem::offset_of!(st_mysql, fields) - 760usize];
+        [::std::mem::offset_of!(st_mysql, host_info) - 704usize];
+    ["Offset of field: st_mysql::info"][::std::mem::offset_of!(st_mysql, info) - 712usize];
+    ["Offset of field: st_mysql::db"][::std::mem::offset_of!(st_mysql, db) - 720usize];
+    ["Offset of field: st_mysql::charset"][::std::mem::offset_of!(st_mysql, charset) - 728usize];
+    ["Offset of field: st_mysql::fields"][::std::mem::offset_of!(st_mysql, fields) - 736usize];
     ["Offset of field: st_mysql::field_alloc"]
-        [::std::mem::offset_of!(st_mysql, field_alloc) - 768usize];
+        [::std::mem::offset_of!(st_mysql, field_alloc) - 744usize];
     ["Offset of field: st_mysql::affected_rows"]
-        [::std::mem::offset_of!(st_mysql, affected_rows) - 856usize];
+        [::std::mem::offset_of!(st_mysql, affected_rows) - 832usize];
     ["Offset of field: st_mysql::insert_id"]
-        [::std::mem::offset_of!(st_mysql, insert_id) - 864usize];
+        [::std::mem::offset_of!(st_mysql, insert_id) - 840usize];
     ["Offset of field: st_mysql::extra_info"]
-        [::std::mem::offset_of!(st_mysql, extra_info) - 872usize];
+        [::std::mem::offset_of!(st_mysql, extra_info) - 848usize];
     ["Offset of field: st_mysql::thread_id"]
-        [::std::mem::offset_of!(st_mysql, thread_id) - 880usize];
+        [::std::mem::offset_of!(st_mysql, thread_id) - 856usize];
     ["Offset of field: st_mysql::packet_length"]
-        [::std::mem::offset_of!(st_mysql, packet_length) - 888usize];
-    ["Offset of field: st_mysql::port"][::std::mem::offset_of!(st_mysql, port) - 896usize];
+        [::std::mem::offset_of!(st_mysql, packet_length) - 860usize];
+    ["Offset of field: st_mysql::port"][::std::mem::offset_of!(st_mysql, port) - 864usize];
     ["Offset of field: st_mysql::client_flag"]
-        [::std::mem::offset_of!(st_mysql, client_flag) - 904usize];
+        [::std::mem::offset_of!(st_mysql, client_flag) - 868usize];
     ["Offset of field: st_mysql::server_capabilities"]
-        [::std::mem::offset_of!(st_mysql, server_capabilities) - 912usize];
+        [::std::mem::offset_of!(st_mysql, server_capabilities) - 872usize];
     ["Offset of field: st_mysql::protocol_version"]
-        [::std::mem::offset_of!(st_mysql, protocol_version) - 920usize];
+        [::std::mem::offset_of!(st_mysql, protocol_version) - 876usize];
     ["Offset of field: st_mysql::field_count"]
-        [::std::mem::offset_of!(st_mysql, field_count) - 924usize];
+        [::std::mem::offset_of!(st_mysql, field_count) - 880usize];
     ["Offset of field: st_mysql::server_status"]
-        [::std::mem::offset_of!(st_mysql, server_status) - 928usize];
+        [::std::mem::offset_of!(st_mysql, server_status) - 884usize];
     ["Offset of field: st_mysql::server_language"]
-        [::std::mem::offset_of!(st_mysql, server_language) - 932usize];
+        [::std::mem::offset_of!(st_mysql, server_language) - 888usize];
     ["Offset of field: st_mysql::warning_count"]
-        [::std::mem::offset_of!(st_mysql, warning_count) - 936usize];
-    ["Offset of field: st_mysql::options"][::std::mem::offset_of!(st_mysql, options) - 944usize];
-    ["Offset of field: st_mysql::status"][::std::mem::offset_of!(st_mysql, status) - 1192usize];
-    ["Offset of field: st_mysql::free_me"][::std::mem::offset_of!(st_mysql, free_me) - 1196usize];
+        [::std::mem::offset_of!(st_mysql, warning_count) - 892usize];
+    ["Offset of field: st_mysql::options"][::std::mem::offset_of!(st_mysql, options) - 896usize];
+    ["Offset of field: st_mysql::status"][::std::mem::offset_of!(st_mysql, status) - 1128usize];
+    ["Offset of field: st_mysql::free_me"][::std::mem::offset_of!(st_mysql, free_me) - 1132usize];
     ["Offset of field: st_mysql::reconnect"]
-        [::std::mem::offset_of!(st_mysql, reconnect) - 1197usize];
-    ["Offset of field: st_mysql::scramble"][::std::mem::offset_of!(st_mysql, scramble) - 1198usize];
-    ["Offset of field: st_mysql::unused1"][::std::mem::offset_of!(st_mysql, unused1) - 1219usize];
-    ["Offset of field: st_mysql::unused2"][::std::mem::offset_of!(st_mysql, unused2) - 1224usize];
-    ["Offset of field: st_mysql::unused3"][::std::mem::offset_of!(st_mysql, unused3) - 1232usize];
-    ["Offset of field: st_mysql::unused4"][::std::mem::offset_of!(st_mysql, unused4) - 1240usize];
-    ["Offset of field: st_mysql::unused5"][::std::mem::offset_of!(st_mysql, unused5) - 1248usize];
-    ["Offset of field: st_mysql::stmts"][::std::mem::offset_of!(st_mysql, stmts) - 1256usize];
-    ["Offset of field: st_mysql::methods"][::std::mem::offset_of!(st_mysql, methods) - 1264usize];
-    ["Offset of field: st_mysql::thd"][::std::mem::offset_of!(st_mysql, thd) - 1272usize];
+        [::std::mem::offset_of!(st_mysql, reconnect) - 1133usize];
+    ["Offset of field: st_mysql::scramble"][::std::mem::offset_of!(st_mysql, scramble) - 1134usize];
+    ["Offset of field: st_mysql::unused1"][::std::mem::offset_of!(st_mysql, unused1) - 1155usize];
+    ["Offset of field: st_mysql::unused2"][::std::mem::offset_of!(st_mysql, unused2) - 1160usize];
+    ["Offset of field: st_mysql::unused3"][::std::mem::offset_of!(st_mysql, unused3) - 1168usize];
+    ["Offset of field: st_mysql::unused4"][::std::mem::offset_of!(st_mysql, unused4) - 1176usize];
+    ["Offset of field: st_mysql::unused5"][::std::mem::offset_of!(st_mysql, unused5) - 1184usize];
+    ["Offset of field: st_mysql::stmts"][::std::mem::offset_of!(st_mysql, stmts) - 1192usize];
+    ["Offset of field: st_mysql::methods"][::std::mem::offset_of!(st_mysql, methods) - 1200usize];
+    ["Offset of field: st_mysql::thd"][::std::mem::offset_of!(st_mysql, thd) - 1208usize];
     ["Offset of field: st_mysql::unbuffered_fetch_owner"]
-        [::std::mem::offset_of!(st_mysql, unbuffered_fetch_owner) - 1280usize];
+        [::std::mem::offset_of!(st_mysql, unbuffered_fetch_owner) - 1216usize];
     ["Offset of field: st_mysql::info_buffer"]
-        [::std::mem::offset_of!(st_mysql, info_buffer) - 1288usize];
+        [::std::mem::offset_of!(st_mysql, info_buffer) - 1224usize];
     ["Offset of field: st_mysql::extension"]
-        [::std::mem::offset_of!(st_mysql, extension) - 1296usize];
+        [::std::mem::offset_of!(st_mysql, extension) - 1232usize];
 };
 pub type MYSQL = st_mysql;
 #[repr(C)]
@@ -1464,7 +1472,7 @@ pub struct st_mysql_bind {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql_bind"][::std::mem::size_of::<st_mysql_bind>() - 112usize];
+    ["Size of st_mysql_bind"][::std::mem::size_of::<st_mysql_bind>() - 104usize];
     ["Alignment of st_mysql_bind"][::std::mem::align_of::<st_mysql_bind>() - 8usize];
     ["Offset of field: st_mysql_bind::length"]
         [::std::mem::offset_of!(st_mysql_bind, length) - 0usize];
@@ -1485,25 +1493,25 @@ const _: () = {
     ["Offset of field: st_mysql_bind::buffer_length"]
         [::std::mem::offset_of!(st_mysql_bind, buffer_length) - 64usize];
     ["Offset of field: st_mysql_bind::offset"]
-        [::std::mem::offset_of!(st_mysql_bind, offset) - 72usize];
+        [::std::mem::offset_of!(st_mysql_bind, offset) - 68usize];
     ["Offset of field: st_mysql_bind::length_value"]
-        [::std::mem::offset_of!(st_mysql_bind, length_value) - 80usize];
+        [::std::mem::offset_of!(st_mysql_bind, length_value) - 72usize];
     ["Offset of field: st_mysql_bind::param_number"]
-        [::std::mem::offset_of!(st_mysql_bind, param_number) - 88usize];
+        [::std::mem::offset_of!(st_mysql_bind, param_number) - 76usize];
     ["Offset of field: st_mysql_bind::pack_length"]
-        [::std::mem::offset_of!(st_mysql_bind, pack_length) - 92usize];
+        [::std::mem::offset_of!(st_mysql_bind, pack_length) - 80usize];
     ["Offset of field: st_mysql_bind::buffer_type"]
-        [::std::mem::offset_of!(st_mysql_bind, buffer_type) - 96usize];
+        [::std::mem::offset_of!(st_mysql_bind, buffer_type) - 84usize];
     ["Offset of field: st_mysql_bind::error_value"]
-        [::std::mem::offset_of!(st_mysql_bind, error_value) - 100usize];
+        [::std::mem::offset_of!(st_mysql_bind, error_value) - 88usize];
     ["Offset of field: st_mysql_bind::is_unsigned"]
-        [::std::mem::offset_of!(st_mysql_bind, is_unsigned) - 101usize];
+        [::std::mem::offset_of!(st_mysql_bind, is_unsigned) - 89usize];
     ["Offset of field: st_mysql_bind::long_data_used"]
-        [::std::mem::offset_of!(st_mysql_bind, long_data_used) - 102usize];
+        [::std::mem::offset_of!(st_mysql_bind, long_data_used) - 90usize];
     ["Offset of field: st_mysql_bind::is_null_value"]
-        [::std::mem::offset_of!(st_mysql_bind, is_null_value) - 103usize];
+        [::std::mem::offset_of!(st_mysql_bind, is_null_value) - 91usize];
     ["Offset of field: st_mysql_bind::extension"]
-        [::std::mem::offset_of!(st_mysql_bind, extension) - 104usize];
+        [::std::mem::offset_of!(st_mysql_bind, extension) - 96usize];
 };
 pub type MYSQL_BIND = st_mysql_bind;
 #[repr(C)]
@@ -1549,7 +1557,7 @@ pub struct st_mysql_stmt {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql_stmt"][::std::mem::size_of::<st_mysql_stmt>() - 880usize];
+    ["Size of st_mysql_stmt"][::std::mem::size_of::<st_mysql_stmt>() - 872usize];
     ["Alignment of st_mysql_stmt"][::std::mem::align_of::<st_mysql_stmt>() - 8usize];
     ["Offset of field: st_mysql_stmt::mem_root"]
         [::std::mem::offset_of!(st_mysql_stmt, mem_root) - 0usize];
@@ -1575,35 +1583,35 @@ const _: () = {
     ["Offset of field: st_mysql_stmt::stmt_id"]
         [::std::mem::offset_of!(st_mysql_stmt, stmt_id) - 304usize];
     ["Offset of field: st_mysql_stmt::flags"]
-        [::std::mem::offset_of!(st_mysql_stmt, flags) - 312usize];
+        [::std::mem::offset_of!(st_mysql_stmt, flags) - 308usize];
     ["Offset of field: st_mysql_stmt::prefetch_rows"]
-        [::std::mem::offset_of!(st_mysql_stmt, prefetch_rows) - 320usize];
+        [::std::mem::offset_of!(st_mysql_stmt, prefetch_rows) - 312usize];
     ["Offset of field: st_mysql_stmt::server_status"]
-        [::std::mem::offset_of!(st_mysql_stmt, server_status) - 328usize];
+        [::std::mem::offset_of!(st_mysql_stmt, server_status) - 316usize];
     ["Offset of field: st_mysql_stmt::last_errno"]
-        [::std::mem::offset_of!(st_mysql_stmt, last_errno) - 332usize];
+        [::std::mem::offset_of!(st_mysql_stmt, last_errno) - 320usize];
     ["Offset of field: st_mysql_stmt::param_count"]
-        [::std::mem::offset_of!(st_mysql_stmt, param_count) - 336usize];
+        [::std::mem::offset_of!(st_mysql_stmt, param_count) - 324usize];
     ["Offset of field: st_mysql_stmt::field_count"]
-        [::std::mem::offset_of!(st_mysql_stmt, field_count) - 340usize];
+        [::std::mem::offset_of!(st_mysql_stmt, field_count) - 328usize];
     ["Offset of field: st_mysql_stmt::state"]
-        [::std::mem::offset_of!(st_mysql_stmt, state) - 344usize];
+        [::std::mem::offset_of!(st_mysql_stmt, state) - 332usize];
     ["Offset of field: st_mysql_stmt::last_error"]
-        [::std::mem::offset_of!(st_mysql_stmt, last_error) - 348usize];
+        [::std::mem::offset_of!(st_mysql_stmt, last_error) - 336usize];
     ["Offset of field: st_mysql_stmt::sqlstate"]
-        [::std::mem::offset_of!(st_mysql_stmt, sqlstate) - 860usize];
+        [::std::mem::offset_of!(st_mysql_stmt, sqlstate) - 848usize];
     ["Offset of field: st_mysql_stmt::send_types_to_server"]
-        [::std::mem::offset_of!(st_mysql_stmt, send_types_to_server) - 866usize];
+        [::std::mem::offset_of!(st_mysql_stmt, send_types_to_server) - 854usize];
     ["Offset of field: st_mysql_stmt::bind_param_done"]
-        [::std::mem::offset_of!(st_mysql_stmt, bind_param_done) - 867usize];
+        [::std::mem::offset_of!(st_mysql_stmt, bind_param_done) - 855usize];
     ["Offset of field: st_mysql_stmt::bind_result_done"]
-        [::std::mem::offset_of!(st_mysql_stmt, bind_result_done) - 868usize];
+        [::std::mem::offset_of!(st_mysql_stmt, bind_result_done) - 856usize];
     ["Offset of field: st_mysql_stmt::unbuffered_fetch_cancelled"]
-        [::std::mem::offset_of!(st_mysql_stmt, unbuffered_fetch_cancelled) - 869usize];
+        [::std::mem::offset_of!(st_mysql_stmt, unbuffered_fetch_cancelled) - 857usize];
     ["Offset of field: st_mysql_stmt::update_max_length"]
-        [::std::mem::offset_of!(st_mysql_stmt, update_max_length) - 870usize];
+        [::std::mem::offset_of!(st_mysql_stmt, update_max_length) - 858usize];
     ["Offset of field: st_mysql_stmt::extension"]
-        [::std::mem::offset_of!(st_mysql_stmt, extension) - 872usize];
+        [::std::mem::offset_of!(st_mysql_stmt, extension) - 864usize];
 };
 pub type MYSQL_STMT = st_mysql_stmt;
 #[repr(u32)]
@@ -1739,28 +1747,7 @@ unsafe extern "C" {
 unsafe extern "C" {
     pub fn mysql_close(sock: *mut MYSQL);
 }
-pub type __builtin_va_list = [__va_list_tag; 1usize];
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct __va_list_tag {
-    pub gp_offset: ::std::os::raw::c_uint,
-    pub fp_offset: ::std::os::raw::c_uint,
-    pub overflow_arg_area: *mut ::std::os::raw::c_void,
-    pub reg_save_area: *mut ::std::os::raw::c_void,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of __va_list_tag"][::std::mem::size_of::<__va_list_tag>() - 24usize];
-    ["Alignment of __va_list_tag"][::std::mem::align_of::<__va_list_tag>() - 8usize];
-    ["Offset of field: __va_list_tag::gp_offset"]
-        [::std::mem::offset_of!(__va_list_tag, gp_offset) - 0usize];
-    ["Offset of field: __va_list_tag::fp_offset"]
-        [::std::mem::offset_of!(__va_list_tag, fp_offset) - 4usize];
-    ["Offset of field: __va_list_tag::overflow_arg_area"]
-        [::std::mem::offset_of!(__va_list_tag, overflow_arg_area) - 8usize];
-    ["Offset of field: __va_list_tag::reg_save_area"]
-        [::std::mem::offset_of!(__va_list_tag, reg_save_area) - 16usize];
-};
+pub type __builtin_va_list = *mut ::std::os::raw::c_char;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct st_dynamic_array {

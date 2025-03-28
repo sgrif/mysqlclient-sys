@@ -127,30 +127,65 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
 enum MysqlVersion {
     Mysql5,
     Mysql80,
+    Mysql81,
+    Mysql82,
     Mysql83,
     Mysql84,
     Mysql90,
-    MariaDb10,
+    Mysql91,
+    Mysql92,
+    MariaDb32,
+    MariaDb33,
+    MariaDb34,
 }
 
 impl MysqlVersion {
     const ALL: &'static [Self] = &[
         Self::Mysql5,
         Self::Mysql80,
+        Self::Mysql81,
+        Self::Mysql82,
         Self::Mysql83,
         Self::Mysql84,
         Self::Mysql90,
-        Self::MariaDb10,
+        Self::Mysql91,
+        Self::Mysql92,
+        Self::MariaDb32,
+        Self::MariaDb33,
+        Self::MariaDb34,
     ];
 
     fn as_cfg(&self) -> &'static str {
         match self {
             MysqlVersion::Mysql5 => "mysql_5_7_x",
             MysqlVersion::Mysql80 => "mysql_8_0_x",
+            MysqlVersion::Mysql81 => "mysql_8_1_x",
+            MysqlVersion::Mysql82 => "mysql_8_2_x",
             MysqlVersion::Mysql83 => "mysql_8_3_x",
             MysqlVersion::Mysql84 => "mysql_8_4_x",
             MysqlVersion::Mysql90 => "mysql_9_0_x",
-            MysqlVersion::MariaDb10 => "mariadb_10_x",
+            MysqlVersion::Mysql91 => "mysql_9_1_x",
+            MysqlVersion::Mysql92 => "mysql_9_2_x",
+            MysqlVersion::MariaDb32 => "mariadb_3_2_x",
+            MysqlVersion::MariaDb33 => "mariadb_3_3_x",
+            MysqlVersion::MariaDb34 => "mariadb_3_4_x",
+        }
+    }
+
+    fn to_binding_version(&self) -> &'static str {
+        match self {
+            MysqlVersion::Mysql5 => "5_7_42",
+            MysqlVersion::Mysql80 => "8_0_39",
+            MysqlVersion::Mysql81 => "8_1_0",
+            MysqlVersion::Mysql82 => "8_2_0",
+            MysqlVersion::Mysql83 => "8_3_0",
+            MysqlVersion::Mysql84 => "8_4_3",
+            MysqlVersion::Mysql90 => "9_0_1",
+            MysqlVersion::Mysql91 => "9_1_0",
+            MysqlVersion::Mysql92 => "9_2_0",
+            MysqlVersion::MariaDb32 => "mariadb_3_2_27",
+            MysqlVersion::MariaDb33 => "mariadb_3_3_14",
+            MysqlVersion::MariaDb34 => "mariadb_3_4_4",
         }
     }
 
@@ -158,27 +193,41 @@ impl MysqlVersion {
         // ubuntu/debian packages use the following package versions:
         // libmysqlclient20 -> 5.7.x
         // libmysqlclient21 -> 8.0.x
+        // libmysqlclient22 -> 8.2.x
         // libmysqlclient23 -> 8.3.0
-        // libmysqlclient24 -> 8.4.0 or 9.0
-        // libmariadb-dev 3.3.8 -> mariadb 10.x
+        // libmysqlclient24 -> 8.4.0 or 9.0 or 9.1 or 9.2
+        // libmariadb-dev 3.2.x -> 10.5
+        // libmariadb-dev 3.3.x -> 10.8
+        // libmariadb-dev 3.4.x -> 10.8
         // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
         // major.
         if version.starts_with("5.7") || version.starts_with("20.") || version == "20" {
             Some(Self::Mysql5)
         } else if version.starts_with("8.0") || version.starts_with("21.") || version == "21" {
             Some(Self::Mysql80)
+        } else if version.starts_with("8.1") {
+            Some(Self::Mysql81)
+        } else if version.starts_with("8.2") || version.starts_with("22.") || version == "22" {
+            Some(Self::Mysql82)
         } else if version.starts_with("8.3") || version.starts_with("23.") || version == "23" {
             Some(Self::Mysql83)
         } else if version.starts_with("8.4") || version.starts_with("24.0") || version == "24" {
             Some(Self::Mysql84)
-        } else if version.starts_with("9.0") || version.starts_with("24.1") {
+        } else if version.starts_with("9.0") {
             Some(Self::Mysql90)
-        } else if version.starts_with("10.")
-            || version.starts_with("11.")
-            || version.starts_with("3.")
-            || version == "3"
+        } else if version.starts_with("9.1") {
+            Some(Self::Mysql91)
+        } else if version.starts_with("9.2") || version.starts_with("24.1") {
+            Some(Self::Mysql92)
+        } else if version.starts_with("3.2") || version.starts_with("10.5") {
+            Some(Self::MariaDb32)
+        } else if version.starts_with("3.3") {
+            Some(Self::MariaDb33)
+        } else if version.starts_with("3.4")
+            || version.starts_with("10.8")
+            || version.starts_with("11")
         {
-            Some(Self::MariaDb10)
+            Some(Self::MariaDb34)
         } else {
             None
         }
@@ -186,14 +235,11 @@ impl MysqlVersion {
 }
 
 fn parse_version(version_str: &str) {
-    use MysqlVersion::*;
-
     for v in MysqlVersion::ALL {
         println!("cargo::rustc-check-cfg=cfg({})", v.as_cfg());
     }
     let version = MysqlVersion::parse_version(version_str);
 
-    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("Set by cargo");
     let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
     let ptr_size = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
     let out_dir = std::env::var("OUT_DIR").expect("Set by cargo");
@@ -202,54 +248,33 @@ fn parse_version(version_str: &str) {
 
     if let Some(version) = version {
         println!("cargo:rustc-cfg={}", version.as_cfg());
-    }
-
-    let bindings_path = match (version, target_arch.as_str(), ptr_size.as_str(), is_windows) {
-        // if we use bindgen to generate bindings
-        // we don't want to copy anything
-        _ if cfg!(feature = "buildtime_bindgen") => {
+        if cfg!(feature = "buildtime_bindgen") {
             return;
         }
-        (Some(Mysql5), "x86_64" | "aarch64", "64", false) => "bindings_5_7_42_x86_64_linux.rs",
-        (Some(Mysql80), "x86_64" | "aarch64", "64", false) => "bindings_8_0_36_x86_64_linux.rs",
-        (Some(Mysql80), "x86" | "arm", "32", false) => "bindings_8_0_37_i686_linux.rs",
-        (Some(Mysql80), "x86_64", "64", true) => "bindings_8_0_36_x86_64_windows.rs",
-        (Some(Mysql80), "x86", "32", true) => "bindings_8_0_36_i686_windows.rs",
-        (Some(Mysql83), "x86_64" | "aarch64", "64", false) => "bindings_8_3_0_x86_64_linux.rs",
-        (Some(Mysql83), "x86_64", "64", true) => "bindings_8_3_0_x86_64_windows.rs",
-        (Some(Mysql83), "x86", "32", true) => "bindings_8_3_0_i686_windows.rs",
-        (Some(Mysql84), "x86_64" | "aarch64", "64", false) => "bindings_8_4_0_x86_64_linux.rs",
-        (Some(Mysql84), "x86" | "arm", "32", false) => "bindings_8_4_0_i686_linux.rs",
-        (Some(Mysql84), "x86_64", "64", true) => "bindings_8_4_0_x86_64_windows.rs",
-        (Some(Mysql84), "x86", "32", true) => "bindings_8_4_0_i686_windows.rs",
-        (Some(Mysql90), "x86_64" | "aarch64", "64", false) => "bindings_9_0_1_x86_64_linux.rs",
-        (Some(Mysql90), "x86" | "arm", "32", false) => "bindings_9_0_1_i686_linux.rs",
-        (Some(Mysql90), "x86_64", "64", true) => "bindings_9_0_1_x86_64_windows.rs",
-        (Some(Mysql90), "x86", "32", true) => "bindings_9_0_1_i686_windows.rs",
-        (Some(MariaDb10), "x86_64" | "aarch64", "64", false) => {
-            "bindings_mariadb_10_11_x86_64_linux.rs"
-        }
-        (Some(MariaDb10), "x86", "32", false) => "bindings_mariadb_10_11_i686_linux.rs",
-        (Some(MariaDb10), "arm", "32", false) => "bindings_mariadb_10_11_armv6_linux.rs",
-        (Some(MariaDb10), "x86_64", "64", true) => "bindings_mariadb_10_11_x86_64_windows.rs",
-        (Some(MariaDb10), "x86", "32", true) => "bindings_mariadb_10_11_i686_windows.rs",
-        _ => {
-            panic!(
-                "mysqlclient-sys does not provide bundled bindings for libmysqlclient `{version_str}` \
-                 for the target `{}`.
-                 Consider using the `buildtime_bindgen` feature or \
-                 contribute bindings to the crate\n\
-                 Debug information: (version: {version:?}, target_arch: {target_arch}, ptr_size: {ptr_size})",
-                std::env::var("TARGET").expect("Set by cargo")
-            )
-        }
-    };
-
-    let root = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
-    let mut bindings = PathBuf::from(root);
-    bindings.push("bindings");
-    bindings.push(bindings_path);
-    std::fs::copy(bindings, bindings_target).unwrap();
+        let os = if is_windows { "windows" } else { "linux" };
+        let arch = match ptr_size.as_str() {
+            "32" => "i686",
+            "64" => "x86_64",
+            s => panic!(
+                "Pointer size: `{s}` is not supported by mysqlclient-sys. \
+                 Consider using the `buildtime_bindgen` feature to generate matching bindings at build time"
+            ),
+        };
+        let bindings_path = format!("bindings_{}_{arch}_{os}.rs", version.to_binding_version());
+        let root = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
+        let mut bindings = PathBuf::from(root);
+        bindings.push("bindings");
+        bindings.push(bindings_path);
+        std::fs::copy(bindings, bindings_target).unwrap();
+    } else {
+        let possible_versions = MysqlVersion::ALL
+            .iter()
+            .map(|v| v.as_cfg())
+            .collect::<Vec<_>>();
+        panic!("`{version_str}` is not supported by the mysqlclient-sys crate. \
+                Any of the following versions is supported: {possible_versions:?}. \
+                Consider using the `buildtime_bindgen` feature to generate matching bindings at build time");
+    }
 }
 
 #[cfg(target_env = "msvc")]
@@ -275,21 +300,7 @@ fn autogen_bindings(target: &str) {
     // if you update the options here you also need to
     // update the bindgen command in `DEVELOPMENT.md`
     // and regenerate the bundled bindings with the new options
-    let mut builder = bindgen::Builder::default()
-        // The input header we would like to generate
-        // bindings for.
-        .header("bindings/wrapper.h")
-        .allowlist_function("mysql.*")
-        .allowlist_function("mariadb.*")
-        .allowlist_type("MYSQL.*")
-        .allowlist_type("MARIADB.*")
-        .allowlist_type("mysql.*")
-        .allowlist_type("mariadb.*")
-        .allowlist_var("MYSQL.*")
-        .allowlist_var("MARIADB.*")
-        .default_enum_style(bindgen::EnumVariation::Rust {
-            non_exhaustive: true,
-        })
+    let mut builder = include!("src/make_bindings.rs")
         // Tell cargo to invalidate the built crate whenever any of the
         // included header files changed.
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()));
