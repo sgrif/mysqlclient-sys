@@ -17,11 +17,11 @@ pub const MYSQL_CLIENT_TELEMETRY_PLUGIN_INTERFACE_VERSION: u32 = 512;
 pub const MYSQL_CLIENT_MAX_PLUGINS: u32 = 5;
 pub const MYSQL_CLIENT_PLUGIN_AUTHOR_ORACLE: &[u8; 19] = b"Oracle Corporation\0";
 pub const MYSQL_USERNAME_LENGTH: u32 = 96;
-pub const MYSQL_SERVER_VERSION: &[u8; 6] = b"8.3.0\0";
-pub const MYSQL_BASE_VERSION: &[u8; 11] = b"mysqld-8.3\0";
+pub const MYSQL_SERVER_VERSION: &[u8; 6] = b"9.1.0\0";
+pub const MYSQL_BASE_VERSION: &[u8; 11] = b"mysqld-9.1\0";
 pub const MYSQL_SERVER_SUFFIX_DEF: &[u8; 1] = b"\0";
-pub const MYSQL_VERSION_ID: u32 = 80300;
-pub const MYSQL_VERSION_STABILITY: &[u8; 11] = b"INNOVATION\0";
+pub const MYSQL_VERSION_ID: u32 = 90100;
+pub const MYSQL_VERSION_MATURITY: &[u8; 11] = b"INNOVATION\0";
 pub const MYSQL_PORT: u32 = 3306;
 pub const MYSQL_ADMIN_PORT: u32 = 33062;
 pub const MYSQL_PORT_DEFAULT: u32 = 0;
@@ -71,6 +71,7 @@ pub enum enum_field_types {
     MYSQL_TYPE_TIME2 = 19,
     #[doc = "< Used for replication only"]
     MYSQL_TYPE_TYPED_ARRAY = 20,
+    MYSQL_TYPE_VECTOR = 242,
     MYSQL_TYPE_INVALID = 243,
     #[doc = "< Currently just a placeholder"]
     MYSQL_TYPE_BOOL = 244,
@@ -481,6 +482,7 @@ pub struct MYSQL_PLUGIN_VIO_INFO {
     pub protocol: MYSQL_PLUGIN_VIO_INFO__bindgen_ty_1,
     #[doc = "< it's set, if the protocol is SOCKET or TCP"]
     pub socket: ::std::os::raw::c_int,
+    pub is_tls_established: bool,
     #[doc = "< it's set, if the protocol is PIPE or MEMORY"]
     pub handle: HANDLE,
 }
@@ -506,15 +508,17 @@ pub enum MYSQL_PLUGIN_VIO_INFO__bindgen_ty_1 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of MYSQL_PLUGIN_VIO_INFO"][::std::mem::size_of::<MYSQL_PLUGIN_VIO_INFO>() - 12usize];
+    ["Size of MYSQL_PLUGIN_VIO_INFO"][::std::mem::size_of::<MYSQL_PLUGIN_VIO_INFO>() - 16usize];
     ["Alignment of MYSQL_PLUGIN_VIO_INFO"]
         [::std::mem::align_of::<MYSQL_PLUGIN_VIO_INFO>() - 4usize];
     ["Offset of field: MYSQL_PLUGIN_VIO_INFO::protocol"]
         [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, protocol) - 0usize];
     ["Offset of field: MYSQL_PLUGIN_VIO_INFO::socket"]
         [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, socket) - 4usize];
+    ["Offset of field: MYSQL_PLUGIN_VIO_INFO::is_tls_established"]
+        [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, is_tls_established) - 8usize];
     ["Offset of field: MYSQL_PLUGIN_VIO_INFO::handle"]
-        [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, handle) - 8usize];
+        [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, handle) - 12usize];
 };
 #[repr(u32)]
 #[non_exhaustive]
@@ -691,6 +695,7 @@ pub struct MYSQL_FIELD {
     pub org_table: *mut ::std::os::raw::c_char,
     pub db: *mut ::std::os::raw::c_char,
     pub catalog: *mut ::std::os::raw::c_char,
+    pub def: *mut ::std::os::raw::c_char,
     pub length: ::std::os::raw::c_ulong,
     pub max_length: ::std::os::raw::c_ulong,
     pub name_length: ::std::os::raw::c_uint,
@@ -699,6 +704,7 @@ pub struct MYSQL_FIELD {
     pub org_table_length: ::std::os::raw::c_uint,
     pub db_length: ::std::os::raw::c_uint,
     pub catalog_length: ::std::os::raw::c_uint,
+    pub def_length: ::std::os::raw::c_uint,
     pub flags: ::std::os::raw::c_uint,
     pub decimals: ::std::os::raw::c_uint,
     pub charsetnr: ::std::os::raw::c_uint,
@@ -707,7 +713,7 @@ pub struct MYSQL_FIELD {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of MYSQL_FIELD"][::std::mem::size_of::<MYSQL_FIELD>() - 76usize];
+    ["Size of MYSQL_FIELD"][::std::mem::size_of::<MYSQL_FIELD>() - 84usize];
     ["Alignment of MYSQL_FIELD"][::std::mem::align_of::<MYSQL_FIELD>() - 4usize];
     ["Offset of field: MYSQL_FIELD::name"][::std::mem::offset_of!(MYSQL_FIELD, name) - 0usize];
     ["Offset of field: MYSQL_FIELD::org_name"]
@@ -718,29 +724,32 @@ const _: () = {
     ["Offset of field: MYSQL_FIELD::db"][::std::mem::offset_of!(MYSQL_FIELD, db) - 16usize];
     ["Offset of field: MYSQL_FIELD::catalog"]
         [::std::mem::offset_of!(MYSQL_FIELD, catalog) - 20usize];
-    ["Offset of field: MYSQL_FIELD::length"][::std::mem::offset_of!(MYSQL_FIELD, length) - 24usize];
+    ["Offset of field: MYSQL_FIELD::def"][::std::mem::offset_of!(MYSQL_FIELD, def) - 24usize];
+    ["Offset of field: MYSQL_FIELD::length"][::std::mem::offset_of!(MYSQL_FIELD, length) - 28usize];
     ["Offset of field: MYSQL_FIELD::max_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, max_length) - 28usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, max_length) - 32usize];
     ["Offset of field: MYSQL_FIELD::name_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, name_length) - 32usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, name_length) - 36usize];
     ["Offset of field: MYSQL_FIELD::org_name_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, org_name_length) - 36usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, org_name_length) - 40usize];
     ["Offset of field: MYSQL_FIELD::table_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, table_length) - 40usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, table_length) - 44usize];
     ["Offset of field: MYSQL_FIELD::org_table_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, org_table_length) - 44usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, org_table_length) - 48usize];
     ["Offset of field: MYSQL_FIELD::db_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, db_length) - 48usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, db_length) - 52usize];
     ["Offset of field: MYSQL_FIELD::catalog_length"]
-        [::std::mem::offset_of!(MYSQL_FIELD, catalog_length) - 52usize];
-    ["Offset of field: MYSQL_FIELD::flags"][::std::mem::offset_of!(MYSQL_FIELD, flags) - 56usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, catalog_length) - 56usize];
+    ["Offset of field: MYSQL_FIELD::def_length"]
+        [::std::mem::offset_of!(MYSQL_FIELD, def_length) - 60usize];
+    ["Offset of field: MYSQL_FIELD::flags"][::std::mem::offset_of!(MYSQL_FIELD, flags) - 64usize];
     ["Offset of field: MYSQL_FIELD::decimals"]
-        [::std::mem::offset_of!(MYSQL_FIELD, decimals) - 60usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, decimals) - 68usize];
     ["Offset of field: MYSQL_FIELD::charsetnr"]
-        [::std::mem::offset_of!(MYSQL_FIELD, charsetnr) - 64usize];
-    ["Offset of field: MYSQL_FIELD::type_"][::std::mem::offset_of!(MYSQL_FIELD, type_) - 68usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, charsetnr) - 72usize];
+    ["Offset of field: MYSQL_FIELD::type_"][::std::mem::offset_of!(MYSQL_FIELD, type_) - 76usize];
     ["Offset of field: MYSQL_FIELD::extension"]
-        [::std::mem::offset_of!(MYSQL_FIELD, extension) - 72usize];
+        [::std::mem::offset_of!(MYSQL_FIELD, extension) - 80usize];
 };
 pub type MYSQL_ROW = *mut *mut ::std::os::raw::c_char;
 pub type MYSQL_FIELD_OFFSET = ::std::os::raw::c_uint;
@@ -1314,6 +1323,16 @@ unsafe extern "stdcall" {
     pub fn mysql_init(mysql: *mut MYSQL) -> *mut MYSQL;
 }
 unsafe extern "stdcall" {
+    pub fn mysql_ssl_set(
+        mysql: *mut MYSQL,
+        key: *const ::std::os::raw::c_char,
+        cert: *const ::std::os::raw::c_char,
+        ca: *const ::std::os::raw::c_char,
+        capath: *const ::std::os::raw::c_char,
+        cipher: *const ::std::os::raw::c_char,
+    ) -> bool;
+}
+unsafe extern "stdcall" {
     pub fn mysql_get_ssl_cipher(mysql: *mut MYSQL) -> *const ::std::os::raw::c_char;
 }
 unsafe extern "stdcall" {
@@ -1479,7 +1498,22 @@ unsafe extern "C" {
     pub fn mysql_set_local_infile_default(mysql: *mut MYSQL);
 }
 unsafe extern "stdcall" {
+    pub fn mysql_shutdown(
+        mysql: *mut MYSQL,
+        shutdown_level: mysql_enum_shutdown_level,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "stdcall" {
     pub fn mysql_dump_debug_info(mysql: *mut MYSQL) -> ::std::os::raw::c_int;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_refresh(
+        mysql: *mut MYSQL,
+        refresh_options: ::std::os::raw::c_uint,
+    ) -> ::std::os::raw::c_int;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_kill(mysql: *mut MYSQL, pid: ::std::os::raw::c_ulong) -> ::std::os::raw::c_int;
 }
 unsafe extern "stdcall" {
     pub fn mysql_set_server_option(
@@ -1520,6 +1554,9 @@ unsafe extern "stdcall" {
         mysql: *mut MYSQL,
         wild: *const ::std::os::raw::c_char,
     ) -> *mut MYSQL_RES;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_list_processes(mysql: *mut MYSQL) -> *mut MYSQL_RES;
 }
 unsafe extern "stdcall" {
     pub fn mysql_options(
@@ -1575,6 +1612,13 @@ unsafe extern "stdcall" {
 }
 unsafe extern "stdcall" {
     pub fn mysql_fetch_field(result: *mut MYSQL_RES) -> *mut MYSQL_FIELD;
+}
+unsafe extern "stdcall" {
+    pub fn mysql_list_fields(
+        mysql: *mut MYSQL,
+        table: *const ::std::os::raw::c_char,
+        wild: *const ::std::os::raw::c_char,
+    ) -> *mut MYSQL_RES;
 }
 unsafe extern "stdcall" {
     pub fn mysql_escape_string(
