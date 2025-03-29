@@ -242,6 +242,7 @@ fn parse_version(version_str: &str) {
 
     let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
     let ptr_size = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
+    let target_arch = std::env::var("CARGO_CFG_TARGET_ARCH").expect("Set by cargo");
     let out_dir = std::env::var("OUT_DIR").expect("Set by cargo");
     let mut bindings_target = PathBuf::from(out_dir);
     bindings_target.push("bindings.rs");
@@ -252,10 +253,11 @@ fn parse_version(version_str: &str) {
             return;
         }
         let os = if is_windows { "windows" } else { "linux" };
-        let arch = match ptr_size.as_str() {
-            "32" => "i686",
-            "64" => "x86_64",
-            s => panic!(
+        let arch = match (ptr_size.as_str(), target_arch.as_str()) {
+            ("32", "arm") => "arm",
+            ("32", _) => "i686",
+            ("64", _) => "x86_64",
+            (s, _) => panic!(
                 "Pointer size: `{s}` is not supported by mysqlclient-sys. \
                  Consider using the `buildtime_bindgen` feature to generate matching bindings at build time"
             ),
