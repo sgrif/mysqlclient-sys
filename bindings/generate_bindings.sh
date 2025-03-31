@@ -55,8 +55,8 @@ for version in "${!versions[@]}"; do
     bindgen_common >/bindings/bindings_${version//./_}_x86_64_linux.rs
     bindgen_common -target i686-unknown-linux-gnu >/bindings/bindings_${version//./_}_i686_linux.rs
     bindgen_common -target arm-unknown-linux-gnueabi >/bindings/bindings_${version//./_}_arm_linux.rs
-    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ >/bindings/bindings_${version//./_}_i686_windows.rs
-    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED >/bindings/bindings_${version//./_}_x86_64_windows.rs
+    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ -D_GCC_MAX_ALIGN_T >/bindings/bindings_${version//./_}_i686_windows.rs
+    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED -D_GCC_MAX_ALIGN_T >/bindings/bindings_${version//./_}_x86_64_windows.rs
 done
 
 for version in "${!mariadb_versions[@]}"; do
@@ -70,6 +70,6 @@ for version in "${!mariadb_versions[@]}"; do
     bindgen_common >/bindings/bindings_mariadb_${version//./_}_x86_64_linux.rs
     bindgen_common -target i686-unknown-linux-gnu >/bindings/bindings_mariadb_${version//./_}_i686_linux.rs
     bindgen_common -target arm-unknown-linux-gnueabi >/bindings/bindings_mariadb_${version//./_}_arm_linux.rs
-    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ >/bindings/bindings_mariadb_${version//./_}_i686_windows.rs
-    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED >/bindings/bindings_mariadb_${version//./_}_x86_64_windows.rs
+    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ -D_GCC_MAX_ALIGN_T >/bindings/bindings_mariadb_${version//./_}_i686_windows.rs
+    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED -D_GCC_MAX_ALIGN_T >/bindings/bindings_mariadb_${version//./_}_x86_64_windows.rs
 done
