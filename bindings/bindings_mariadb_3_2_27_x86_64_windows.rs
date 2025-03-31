@@ -40,8 +40,7 @@ pub const MYSQL_NO_DATA: u32 = 100;
 pub const MYSQL_DATA_TRUNCATED: u32 = 101;
 pub const MYSQL_PS_SKIP_RESULT_W_LEN: i32 = -1;
 pub const MYSQL_PS_SKIP_RESULT_STR: i32 = -2;
-pub type __gnuc_va_list = __builtin_va_list;
-pub type va_list = __gnuc_va_list;
+pub type va_list = __builtin_va_list;
 pub type my_bool = ::std::os::raw::c_char;
 pub type my_ulonglong = ::std::os::raw::c_ulonglong;
 #[repr(u32)]

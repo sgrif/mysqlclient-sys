@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+DEBIAN_FRONTEND=noninteractive
+export DEBIAN_FRONTEND
+
 set +ex
 
 declare -A versions
@@ -22,7 +25,7 @@ mariadb_versions['3.3.14']="https://dlm.mariadb.com/4047928/Connectors/c/connect
 mariadb_versions['3.4.4']="https://dlm.mariadb.com/4047886/Connectors/c/connector-c-3.4.4/mariadb-connector-c-3.4.4-debian-buster-amd64.tar.gz"
 
 apt update
-apt install -y binutils xz-utils curl libclang-dev gcc mingw-w64 gcc-i686-linux-gnu
+apt install -y binutils xz-utils curl libclang-dev gcc mingw-w64 gcc-i686-linux-gnu clang gcc-arm-linux-gnueabi
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal -y -c rustfmt
 . "/root/.cargo/env"
 curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rust-lang/rust-bindgen/releases/download/v0.71.1/bindgen-cli-installer.sh | sh
@@ -51,8 +54,9 @@ for version in "${!versions[@]}"; do
 
     bindgen_common >/bindings/bindings_${version//./_}_x86_64_linux.rs
     bindgen_common -target i686-unknown-linux-gnu >/bindings/bindings_${version//./_}_i686_linux.rs
-    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ >/bindings/bindings_${version//./_}_i686_windows.rs
-    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED >/bindings/bindings_${version//./_}_x86_64_windows.rs
+    bindgen_common -target arm-unknown-linux-gnueabi >/bindings/bindings_${version//./_}_arm_linux.rs
+    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ -D_GCC_MAX_ALIGN_T >/bindings/bindings_${version//./_}_i686_windows.rs
+    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED -D_GCC_MAX_ALIGN_T >/bindings/bindings_${version//./_}_x86_64_windows.rs
 done
 
 for version in "${!mariadb_versions[@]}"; do
@@ -65,6 +69,7 @@ for version in "${!mariadb_versions[@]}"; do
     cp -r mariadb-connector-c-*/include/mariadb/* usr/include/mysql/
     bindgen_common >/bindings/bindings_mariadb_${version//./_}_x86_64_linux.rs
     bindgen_common -target i686-unknown-linux-gnu >/bindings/bindings_mariadb_${version//./_}_i686_linux.rs
-    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ >/bindings/bindings_mariadb_${version//./_}_i686_windows.rs
-    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED >/bindings/bindings_mariadb_${version//./_}_x86_64_windows.rs
+    bindgen_common -target arm-unknown-linux-gnueabi >/bindings/bindings_mariadb_${version//./_}_arm_linux.rs
+    bindgen_common -target i686-pc-windows-gnu -I /usr/lib/gcc/i686-w64-mingw32/12-win32/include/ -D_GCC_MAX_ALIGN_T >/bindings/bindings_mariadb_${version//./_}_i686_windows.rs
+    bindgen_common -target x86_64-pc-windows-gnu -I /usr/lib/gcc/x86_64-w64-mingw32/12-win32/include -D_X86INTRIN_H_INCLUDED -D_EMMINTRIN_H_INCLUDED -D_GCC_MAX_ALIGN_T >/bindings/bindings_mariadb_${version//./_}_x86_64_windows.rs
 done
