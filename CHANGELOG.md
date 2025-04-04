@@ -3,6 +3,10 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.4] 2025-04-04
+
+* Unconditionally link to advapi32 on windows to fix the linking problem in more cases
+
 ## [0.4.3] 2025-03-28
 
 * Adding a link annotation for advapi32 on windows as the rust-standard library stops linking it
