@@ -137,7 +137,7 @@ enum MysqlVersion {
     Mysql90,
     Mysql91,
     Mysql92,
-    MariaDb32,
+    MariaDb31,
     MariaDb33,
     MariaDb34,
 }
@@ -153,7 +153,7 @@ impl MysqlVersion {
         Self::Mysql90,
         Self::Mysql91,
         Self::Mysql92,
-        Self::MariaDb32,
+        Self::MariaDb31,
         Self::MariaDb33,
         Self::MariaDb34,
     ];
@@ -169,7 +169,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql90 => "mysql_9_0_x",
             MysqlVersion::Mysql91 => "mysql_9_1_x",
             MysqlVersion::Mysql92 => "mysql_9_2_x",
-            MysqlVersion::MariaDb32 => "mariadb_3_2_x",
+            MysqlVersion::MariaDb31 => "mariadb_3_1_x",
             MysqlVersion::MariaDb33 => "mariadb_3_3_x",
             MysqlVersion::MariaDb34 => "mariadb_3_4_x",
         }
@@ -186,7 +186,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql90 => "9_0_1",
             MysqlVersion::Mysql91 => "9_1_0",
             MysqlVersion::Mysql92 => "9_2_0",
-            MysqlVersion::MariaDb32 => "mariadb_3_2_27",
+            MysqlVersion::MariaDb31 => "mariadb_3_1_27",
             MysqlVersion::MariaDb33 => "mariadb_3_3_14",
             MysqlVersion::MariaDb34 => "mariadb_3_4_4",
         }
@@ -222,19 +222,28 @@ impl MysqlVersion {
             Some(Self::Mysql91)
         } else if version.starts_with("9.2") || version.starts_with("24.1") {
             Some(Self::Mysql92)
-        } else if version.starts_with("3.2") || version.starts_with("10.5") {
-            Some(Self::MariaDb32)
-        } else if version.starts_with("3.3") {
+        } else if version.starts_with("3.1") || match_semver(">=10.2.0, <=10.6.0", version) {
+            Some(Self::MariaDb31)
+        } else if version.starts_with("3.2")
+            || version.starts_with("3.3")
+            || match_semver(">=10.6.1, <11.0.0", version)
+        {
             Some(Self::MariaDb33)
-        } else if version.starts_with("3.4")
-            || version.starts_with("10.8")
-            || version.starts_with("11")
+        } else if version.starts_with("3.4") || version.starts_with("11")
         {
             Some(Self::MariaDb34)
         } else {
             None
         }
     }
+}
+
+fn match_semver(version_req: &str, version: &str) -> bool {
+    use semver::{Version, VersionReq};
+
+    let req = VersionReq::parse(&version_req).unwrap();
+    let ver = Version::parse(&version).unwrap();
+    req.matches(&ver)
 }
 
 fn parse_version(version_str: &str) {

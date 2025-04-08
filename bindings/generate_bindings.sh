@@ -18,7 +18,7 @@ versions['5.7.42']="https://downloads.mysql.com/archives/get/p/23/file/libmysqlc
 
 declare -A mariadb_versions
 # 10.5.20
-mariadb_versions['3.2.27']="https://dlm.mariadb.com/4048058/Connectors/c/connector-c-3.1.27/mariadb-connector-c-3.1.27-debian-buster-amd64.tar.gz"
+mariadb_versions['3.1.27']="https://dlm.mariadb.com/4048058/Connectors/c/connector-c-3.1.27/mariadb-connector-c-3.1.27-debian-buster-amd64.tar.gz"
 # 10.8.8
 mariadb_versions['3.3.14']="https://dlm.mariadb.com/4047928/Connectors/c/connector-c-3.3.14/mariadb-connector-c-3.3.14-debian-buster-amd64.tar.gz"
 # 10.8.8
