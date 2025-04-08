@@ -11,23 +11,23 @@ pub use self::bindings::*;
 
 // the following type devs are compatibility shims for diesel
 
-#[cfg(not(any(mysql_5_7_x, mariadb_3_2_x, mariadb_3_3_x, mariadb_3_3_x)))]
+#[cfg(not(any(mysql_5_7_x, mariadb_3_1_x, mariadb_3_3_x, mariadb_3_4_x)))]
 pub type my_bool = bool;
 
-#[cfg(not(any(mysql_5_7_x, mariadb_3_2_x, mariadb_3_3_x, mariadb_3_3_x)))]
+#[cfg(not(any(mysql_5_7_x, mariadb_3_1_x, mariadb_3_3_x, mariadb_3_4_x)))]
 pub const FALSE: my_bool = false;
-#[cfg(not(any(mysql_5_7_x, mariadb_3_2_x, mariadb_3_3_x, mariadb_3_3_x)))]
+#[cfg(not(any(mysql_5_7_x, mariadb_3_1_x, mariadb_3_3_x, mariadb_3_4_x)))]
 pub const TRUE: my_bool = true;
 
-#[cfg(any(mysql_5_7_x, mariadb_3_2_x, mariadb_3_3_x, mariadb_3_3_x))]
+#[cfg(any(mysql_5_7_x, mariadb_3_1_x, mariadb_3_3_x, mariadb_3_4_x))]
 pub const FALSE: my_bool = 0;
 
-#[cfg(any(mysql_5_7_x, mariadb_3_2_x, mariadb_3_3_x, mariadb_3_3_x))]
+#[cfg(any(mysql_5_7_x, mariadb_3_1_x, mariadb_3_3_x, mariadb_3_4_x))]
 pub const TRUE: my_bool = 1;
 
-pub const SUPPORTS_MYSQL_SSL_MODE: bool = !cfg!(any(mariadb_3_3_x, mariadb_3_2_x, mariadb_3_4_x));
+pub const SUPPORTS_MYSQL_SSL_MODE: bool = !cfg!(any(mariadb_3_3_x, mariadb_3_1_x, mariadb_3_4_x));
 
-#[cfg(any(mariadb_3_3_x, mariadb_3_2_x, mariadb_3_4_x))]
+#[cfg(any(mariadb_3_3_x, mariadb_3_1_x, mariadb_3_4_x))]
 #[repr(u32)]
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub enum mysql_ssl_mode {
@@ -38,7 +38,7 @@ pub enum mysql_ssl_mode {
     SSL_MODE_VERIFY_IDENTITY = 5,
 }
 
-#[cfg(any(mariadb_3_3_x, mariadb_3_2_x, mariadb_3_4_x))]
+#[cfg(any(mariadb_3_3_x, mariadb_3_1_x, mariadb_3_4_x))]
 pub mod mysql_option {
     /// that's not supported, do not use it
     pub const MYSQL_OPT_SSL_MODE: crate::bindings::mysql_option =

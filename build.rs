@@ -137,7 +137,7 @@ enum MysqlVersion {
     Mysql90,
     Mysql91,
     Mysql92,
-    MariaDb32,
+    MariaDb31,
     MariaDb33,
     MariaDb34,
 }
@@ -153,7 +153,7 @@ impl MysqlVersion {
         Self::Mysql90,
         Self::Mysql91,
         Self::Mysql92,
-        Self::MariaDb32,
+        Self::MariaDb31,
         Self::MariaDb33,
         Self::MariaDb34,
     ];
@@ -169,7 +169,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql90 => "mysql_9_0_x",
             MysqlVersion::Mysql91 => "mysql_9_1_x",
             MysqlVersion::Mysql92 => "mysql_9_2_x",
-            MysqlVersion::MariaDb32 => "mariadb_3_2_x",
+            MysqlVersion::MariaDb31 => "mariadb_3_1_x",
             MysqlVersion::MariaDb33 => "mariadb_3_3_x",
             MysqlVersion::MariaDb34 => "mariadb_3_4_x",
         }
@@ -186,7 +186,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql90 => "9_0_1",
             MysqlVersion::Mysql91 => "9_1_0",
             MysqlVersion::Mysql92 => "9_2_0",
-            MysqlVersion::MariaDb32 => "mariadb_3_2_27",
+            MysqlVersion::MariaDb31 => "mariadb_3_1_27",
             MysqlVersion::MariaDb33 => "mariadb_3_3_14",
             MysqlVersion::MariaDb34 => "mariadb_3_4_4",
         }
@@ -199,11 +199,35 @@ impl MysqlVersion {
         // libmysqlclient22 -> 8.2.x
         // libmysqlclient23 -> 8.3.0
         // libmysqlclient24 -> 8.4.0 or 9.0 or 9.1 or 9.2
-        // libmariadb-dev 3.2.x -> 10.5
-        // libmariadb-dev 3.3.x -> 10.8
-        // libmariadb-dev 3.4.x -> 10.8
         // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
-        // major.
+        // major version.
+        //
+        // For libmariadb the mapping is a bit more complicated
+        //
+        // Mappings can be reconstructed by checking
+        // the mariadb repo here: https://github.com/MariaDB/server/
+        // for each relevant tag and look at the linked libmariadb client submodule.
+        // In the linked submodule the CMakeLists.txt file contains the version
+        //
+        // * mariadb version 10.2.x -> 3.0.x/3.1.x (3.0 is compatible with 3.1)
+        // * mariadb version 10.3.x -> 3.0.x/3.1.x (3.0 is compatible with 3.1)
+        // * mariadb version 10.4.x -> 3.1.x
+        // * mariadb version 10.5.x -> 3.1.x
+        // * mariadb version 10.6.x -> 3.2.x/3.3.x (3.2 is compatible with 3.3)
+        // * mariadb version 10.7.x -> 3.2.x/3.3.x (3.2 is compatible with 3.3)
+        // * mariadb version 10.8.x -> 3.3.x
+        // * mariadb version 10.9.x -> 3.3.x
+        // * mariadb version 10.10.x -> 3.3.x
+        // * mariadb version 10.11.x -> 3.3.x
+        // * mariadb version 11.0.x -> 3.3.x
+        // * mariadb version 11.1.x -> 3.3.x
+        // * mariadb version 11.2.x -> 3.3.x
+        // * mariadb version 11.3.x -> 3.3.x
+        // * mariadb version 11.4.x -> 3.4.x (11.4.0 references 3.3.x, but I believe that might be a mistake)
+        // * mariadb version 11.5.x -> 3.4.x
+        // * mariadb version 11.6.x -> 3.4.x
+        // * mariadb version 11.7.x -> 3.4.x
+        // * mariadb version 11.8.x -> 3.4.x
         if version.starts_with("5.7") || version.starts_with("20.") || version == "20" {
             Some(Self::Mysql5)
         } else if version.starts_with("8.0") || version.starts_with("21.") || version == "21" {
@@ -222,19 +246,29 @@ impl MysqlVersion {
             Some(Self::Mysql91)
         } else if version.starts_with("9.2") || version.starts_with("24.1") {
             Some(Self::Mysql92)
-        } else if version.starts_with("3.2") || version.starts_with("10.5") {
-            Some(Self::MariaDb32)
-        } else if version.starts_with("3.3") {
-            Some(Self::MariaDb33)
-        } else if version.starts_with("3.4")
-            || version.starts_with("10.8")
-            || version.starts_with("11")
+        } else if version.starts_with("3.1") || match_semver(">=10.2.0, <10.6.0", version) {
+            Some(Self::MariaDb31)
+        } else if version.starts_with("3.2")
+            || version.starts_with("3.3")
+            || match_semver(">=10.6.0, <11.4.0", version)
         {
+            Some(Self::MariaDb33)
+        } else if version.starts_with("3.4") || version.starts_with("11") {
             Some(Self::MariaDb34)
         } else {
             None
         }
     }
+}
+
+fn match_semver(version_req: &str, version: &str) -> bool {
+    use semver::{Version, VersionReq};
+
+    let Ok(ver) = Version::parse(&version) else {
+        return false;
+    };
+    let req = VersionReq::parse(&version_req).expect("Version matching string is invalid");
+    req.matches(&ver)
 }
 
 fn parse_version(version_str: &str) {
