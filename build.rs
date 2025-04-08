@@ -241,8 +241,10 @@ impl MysqlVersion {
 fn match_semver(version_req: &str, version: &str) -> bool {
     use semver::{Version, VersionReq};
 
-    let req = VersionReq::parse(&version_req).unwrap();
-    let ver = Version::parse(&version).unwrap();
+    let Ok(ver) = Version::parse(&version) else {
+        return false;
+    };
+    let req = VersionReq::parse(&version_req).expect("Version matching string is invalid");
     req.matches(&ver)
 }
 
