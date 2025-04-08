@@ -1,6 +1,6 @@
 [package]
 name = "mysqlclient-sys"
-version = "0.4.4"
+version = "0.4.5"
 description = "Auto-generated rust bindings for libmysqlclient"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/mysqlclient-sys"
