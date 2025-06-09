@@ -28,7 +28,7 @@ apt update
 apt install -y binutils xz-utils curl libclang-dev gcc mingw-w64 gcc-i686-linux-gnu clang gcc-arm-linux-gnueabi
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal -y -c rustfmt
 . "/root/.cargo/env"
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/rust-lang/rust-bindgen/releases/download/v0.71.1/bindgen-cli-installer.sh | sh
+cargo install bindgen-cli@0.72.0
 
 function bindgen_common() {
     bindgen --allowlist-function "mysql.*" \
