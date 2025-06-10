@@ -3,6 +3,10 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.6] 2025-06-10
+
+* Update bindgen version to 0.72.0
+
 ## [0.4.5] 2025-04-08
 
 * Fix libmariadb bindings version mapping
