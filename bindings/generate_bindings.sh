@@ -6,6 +6,7 @@ export DEBIAN_FRONTEND
 set +ex
 
 declare -A versions
+versions['9.3.0']="https://dev.mysql.com/get/Downloads/MySQL-9.3/libmysqlclient-dev_9.3.0-1debian12_amd64.deb"
 versions['9.2.0']="https://dev.mysql.com/get/Downloads/MySQL-9.2/libmysqlclient-dev_9.2.0-1debian12_amd64.deb"
 versions['9.1.0']="https://downloads.mysql.com/archives/get/p/23/file/libmysqlclient-dev_9.1.0-1debian12_amd64.deb"
 versions['9.0.1']="https://downloads.mysql.com/archives/get/p/23/file/libmysqlclient-dev_9.0.1-1debian12_amd64.deb"
