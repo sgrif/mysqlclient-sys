@@ -17,7 +17,7 @@ fn main() {
     }
 
     if cfg!(feature = "bundled") {
-        parse_version("9.2.0");
+        parse_version("9.3.0");
         return;
     }
     let target = std::env::var("TARGET")
@@ -137,6 +137,7 @@ enum MysqlVersion {
     Mysql90,
     Mysql91,
     Mysql92,
+    Mysql93,
     MariaDb31,
     MariaDb33,
     MariaDb34,
@@ -153,6 +154,7 @@ impl MysqlVersion {
         Self::Mysql90,
         Self::Mysql91,
         Self::Mysql92,
+        Self::Mysql93,
         Self::MariaDb31,
         Self::MariaDb33,
         Self::MariaDb34,
@@ -169,6 +171,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql90 => "mysql_9_0_x",
             MysqlVersion::Mysql91 => "mysql_9_1_x",
             MysqlVersion::Mysql92 => "mysql_9_2_x",
+            MysqlVersion::Mysql93 => "mysql_9_3_x",
             MysqlVersion::MariaDb31 => "mariadb_3_1_x",
             MysqlVersion::MariaDb33 => "mariadb_3_3_x",
             MysqlVersion::MariaDb34 => "mariadb_3_4_x",
@@ -186,6 +189,7 @@ impl MysqlVersion {
             MysqlVersion::Mysql90 => "9_0_1",
             MysqlVersion::Mysql91 => "9_1_0",
             MysqlVersion::Mysql92 => "9_2_0",
+            MysqlVersion::Mysql93 => "9_3_0",
             MysqlVersion::MariaDb31 => "mariadb_3_1_27",
             MysqlVersion::MariaDb33 => "mariadb_3_3_14",
             MysqlVersion::MariaDb34 => "mariadb_3_4_4",
@@ -246,6 +250,8 @@ impl MysqlVersion {
             Some(Self::Mysql91)
         } else if version.starts_with("9.2") || version.starts_with("24.1") {
             Some(Self::Mysql92)
+        } else if version.starts_with("9.3") {
+            Some(Self::Mysql93)
         } else if version.starts_with("3.1") || match_semver(">=10.2.0, <10.6.0", version) {
             Some(Self::MariaDb31)
         } else if version.starts_with("3.2")
@@ -257,6 +263,24 @@ impl MysqlVersion {
             Some(Self::MariaDb34)
         } else {
             None
+        }
+    }
+
+    fn as_display_version(&self) -> &'static str {
+        match self {
+            MysqlVersion::Mysql5 => "Mysql 5.7.x",
+            MysqlVersion::Mysql80 => "Mysql 8.0.x",
+            MysqlVersion::Mysql81 => "Mysql 8.1.x",
+            MysqlVersion::Mysql82 => "Mysql 8.2.x",
+            MysqlVersion::Mysql83 => "Mysql 8.3.x",
+            MysqlVersion::Mysql84 => "Mysql 8.4.x",
+            MysqlVersion::Mysql90 => "Mysql 9.0.x",
+            MysqlVersion::Mysql91 => "Mysql 9.1.x",
+            MysqlVersion::Mysql92 => "Mysql 9.2.x",
+            MysqlVersion::Mysql93 => "Mysql 9.3.x",
+            MysqlVersion::MariaDb31 => "MariaDB 3.1.x",
+            MysqlVersion::MariaDb33 => "MariaDB 3.3.x",
+            MysqlVersion::MariaDb34 => "MariaDB 3.4.x",
         }
     }
 }
@@ -308,11 +332,13 @@ fn parse_version(version_str: &str) {
     } else {
         let possible_versions = MysqlVersion::ALL
             .iter()
-            .map(|v| v.as_cfg())
+            .map(|v| v.as_display_version())
             .collect::<Vec<_>>();
         panic!("`{version_str}` is not supported by the mysqlclient-sys crate. \
                 Any of the following versions is supported: {possible_versions:?}. \
-                Consider using the `buildtime_bindgen` feature to generate matching bindings at build time");
+                Consider using the `buildtime_bindgen` feature to generate matching bindings at build time. \n\
+                If you set the version via the `MYSQLCLIENT_VERSION` variable make sure that it is a valid semver\
+                version like `8.0.32`");
     }
 }
 
