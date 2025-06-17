@@ -28,6 +28,7 @@ include = [
    "/source/extra/rapidjson",
    "/source/extra/libedit",
    "/source/extra/libcno",
+   "/source/extra/xxhash",
    "/source/strings",
    "/source/vio",
    "/source/mysys",
