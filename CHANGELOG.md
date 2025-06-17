@@ -3,6 +3,13 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.7] 2025-06-17
+
+* Update the bundled mysqlclient source version to 0.9.3
+* Add pregenerated bindings for mysqlclient 9.3.x
+* Reenable the `mysql_native_password` plugin
+* Improved some error messages if no matching bindings where found for the specified mysqlclient version
+
 ## [0.4.6] 2025-06-10
 
 * Update bindgen version to 0.72.0
