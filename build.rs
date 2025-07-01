@@ -98,21 +98,21 @@ fn main() {
             return;
         }
     }
-    panic!(
-        "Did not find a compatible version of libmysqlclient.\n\
-            Ensure that you installed one and teached mysqlclient-sys how to find it\n\
-            You have the following options for that:\n\
-            \n\
-            * Use `pkg_config` to automatically detect the right location\n\
-            * Use vcpkg to automatically detect the right location. \n\
-              You also need to set `MYSQLCLIENT_VERSION` to specify which\n\
-              version of libmysqlclient you are using\n\
-            * Set the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment \n\
-              variables to point the compiler to the right directory and specify \n\
-              which version is used\n\
-            * Make the `mysql_config` binary avaible in the environment that invokes\n\
-              the compiler"
-    );
+    panic!(r#"
+        Did not find a compatible version of libmysqlclient.
+            Ensure that you installed one and taught mysqlclient-sys how to find it.
+            You have the following options for that:
+
+            * Use `pkg_config` to automatically detect the right location
+            * Use vcpkg to automatically detect the right location.
+              You also need to set `MYSQLCLIENT_VERSION` to specify which
+              version of libmysqlclient you are using
+            * Set the `MYSQLCLIENT_LIB_DIR` and `MYSQLCLIENT_VERSION` environment
+              variables to point the compiler to the right directory and specify
+              which version is used
+            * Make the `mysql_config` binary available in the environment that invokes
+              the compiler
+    "#);
 }
 
 fn mysql_config_variable(var_name: &str) -> Option<String> {
