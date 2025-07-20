@@ -98,7 +98,8 @@ fn main() {
             return;
         }
     }
-    panic!(r#"
+    panic!(
+        r#"
         Did not find a compatible version of libmysqlclient.
             Ensure that you installed one and taught mysqlclient-sys how to find it.
             You have the following options for that:
@@ -112,7 +113,8 @@ fn main() {
               which version is used
             * Make the `mysql_config` binary available in the environment that invokes
               the compiler
-    "#);
+    "#
+    );
 }
 
 fn mysql_config_variable(var_name: &str) -> Option<String> {
@@ -337,8 +339,9 @@ fn parse_version(version_str: &str) {
         panic!("`{version_str}` is not supported by the mysqlclient-sys crate. \
                 Any of the following versions is supported: {possible_versions:?}. \
                 Consider using the `buildtime_bindgen` feature to generate matching bindings at build time. \n\
-                If you set the version via the `MYSQLCLIENT_VERSION` variable make sure that it is a valid semver\
-                version like `8.0.32`");
+                If you set the version via the `MYSQLCLIENT_VERSION` variable make sure that it is a valid semver \
+                version like `8.0.32` that matches a supported version, in this case `MySQL 8.0.x` (remove the \
+                name of the software from a supported version and replace the x with a valid patch number)");
     }
 }
 
