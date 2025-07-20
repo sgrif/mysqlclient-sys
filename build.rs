@@ -178,7 +178,7 @@ impl MysqlVersion {
         }
     }
 
-    fn to_binding_version(&self) -> &'static str {
+    fn as_binding_version(&self) -> &'static str {
         match self {
             MysqlVersion::Mysql5 => "5_7_42",
             MysqlVersion::Mysql80 => "8_0_39",
@@ -323,7 +323,7 @@ fn parse_version(version_str: &str) {
                  Consider using the `buildtime_bindgen` feature to generate matching bindings at build time"
             ),
         };
-        let bindings_path = format!("bindings_{}_{arch}_{os}.rs", version.to_binding_version());
+        let bindings_path = format!("bindings_{}_{arch}_{os}.rs", version.as_binding_version());
         let root = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
         let mut bindings = PathBuf::from(root);
         bindings.push("bindings");
