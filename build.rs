@@ -2,10 +2,14 @@ use std::env;
 use std::path::PathBuf;
 use std::process::Command;
 
+/// Name of the MySQLClient library to probe using [`pkg_config`].
 const PKG_CONFIG_MYSQL_LIB: &str = "mysqlclient";
+/// Name of the MariaDB library to probe using [`pkg_config`].
 const PKG_CONFIG_MARIADB_LIB: &str = "libmariadb";
+/// Name of the MySQLClient library to find using [`vcpkg`].
 #[cfg(target_env = "msvc")]
 const VCPKG_MYSQL_LIB: &str = "libmysql";
+/// Name of the MariaDB library to find using [`vcpkg`].
 #[cfg(target_env = "msvc")]
 const VCPKG_MARIADB_LIB: &str = "libmariadb";
 
@@ -98,7 +102,8 @@ fn main() {
             return;
         }
     }
-    panic!(r#"
+    panic!(
+        r#"
         Did not find a compatible version of libmysqlclient.
             Ensure that you installed one and taught mysqlclient-sys how to find it.
             You have the following options for that:
@@ -112,9 +117,11 @@ fn main() {
               which version is used
             * Make the `mysql_config` binary available in the environment that invokes
               the compiler
-    "#);
+    "#
+    );
 }
 
+/// Retrieves the value that `mysql_config` provides for `var_name` if the execution of the command succeeded.
 fn mysql_config_variable(var_name: &str) -> Option<String> {
     Command::new("mysql_config")
         .arg(var_name)
@@ -127,6 +134,7 @@ fn mysql_config_variable(var_name: &str) -> Option<String> {
 }
 
 #[derive(Clone, Copy, Debug)]
+/// MySQL versions that this crate supports.
 enum MysqlVersion {
     Mysql5,
     Mysql80,
@@ -144,6 +152,7 @@ enum MysqlVersion {
 }
 
 impl MysqlVersion {
+    /// Slice containing all supported MySQL versions.
     const ALL: &'static [Self] = &[
         Self::Mysql5,
         Self::Mysql80,
@@ -160,6 +169,7 @@ impl MysqlVersion {
         Self::MariaDb34,
     ];
 
+    /// Retrieves the configuration [`str`] that represents the version.
     fn as_cfg(&self) -> &'static str {
         match self {
             MysqlVersion::Mysql5 => "mysql_5_7_x",
@@ -178,7 +188,8 @@ impl MysqlVersion {
         }
     }
 
-    fn to_binding_version(&self) -> &'static str {
+    /// Retrieves the [`str`] that identifies the source file for the bindings of the version.
+    fn as_binding_version(&self) -> &'static str {
         match self {
             MysqlVersion::Mysql5 => "5_7_42",
             MysqlVersion::Mysql80 => "8_0_39",
@@ -196,6 +207,7 @@ impl MysqlVersion {
         }
     }
 
+    /// Parses a [`semver`] [`str`] to the version it represents, if it represents one of the valid versions.
     fn parse_version(version: &str) -> Option<Self> {
         // ubuntu/debian packages use the following package versions:
         // libmysqlclient20 -> 5.7.x
@@ -266,18 +278,19 @@ impl MysqlVersion {
         }
     }
 
+    /// Retrieves a human friendly [`str`] that represents the version.
     fn as_display_version(&self) -> &'static str {
         match self {
-            MysqlVersion::Mysql5 => "Mysql 5.7.x",
-            MysqlVersion::Mysql80 => "Mysql 8.0.x",
-            MysqlVersion::Mysql81 => "Mysql 8.1.x",
-            MysqlVersion::Mysql82 => "Mysql 8.2.x",
-            MysqlVersion::Mysql83 => "Mysql 8.3.x",
-            MysqlVersion::Mysql84 => "Mysql 8.4.x",
-            MysqlVersion::Mysql90 => "Mysql 9.0.x",
-            MysqlVersion::Mysql91 => "Mysql 9.1.x",
-            MysqlVersion::Mysql92 => "Mysql 9.2.x",
-            MysqlVersion::Mysql93 => "Mysql 9.3.x",
+            MysqlVersion::Mysql5 => "MySQL 5.7.x",
+            MysqlVersion::Mysql80 => "MySQL 8.0.x",
+            MysqlVersion::Mysql81 => "MySQL 8.1.x",
+            MysqlVersion::Mysql82 => "MySQL 8.2.x",
+            MysqlVersion::Mysql83 => "MySQL 8.3.x",
+            MysqlVersion::Mysql84 => "MySQL 8.4.x",
+            MysqlVersion::Mysql90 => "MySQL 9.0.x",
+            MysqlVersion::Mysql91 => "MySQL 9.1.x",
+            MysqlVersion::Mysql92 => "MySQL 9.2.x",
+            MysqlVersion::Mysql93 => "MySQL 9.3.x",
             MysqlVersion::MariaDb31 => "MariaDB 3.1.x",
             MysqlVersion::MariaDb33 => "MariaDB 3.3.x",
             MysqlVersion::MariaDb34 => "MariaDB 3.4.x",
@@ -285,6 +298,10 @@ impl MysqlVersion {
     }
 }
 
+/// Computes whether a [`str`] representing a [`semver::Version`] (if valid, if not returns false) matches a [`str`] representing a [`semver::VersionReq`].
+/// 
+/// # Panics
+/// If the [`str`] representing the [`semver::VersionReq`] is invalid.
 fn match_semver(version_req: &str, version: &str) -> bool {
     use semver::{Version, VersionReq};
 
@@ -295,6 +312,10 @@ fn match_semver(version_req: &str, version: &str) -> bool {
     req.matches(&ver)
 }
 
+/// Parses a [`semver`] [`str`] to the version it represents, if it represents one of the valid versions, and configures it, pasting the corresponding bindings to the output directory.
+/// 
+/// # Panics
+/// If the pointer size is not supported (it's neither 32 nor 64), the version_str isn't supported or the file pasting failed.
 fn parse_version(version_str: &str) {
     for v in MysqlVersion::ALL {
         println!("cargo::rustc-check-cfg=cfg({})", v.as_cfg());
@@ -323,7 +344,7 @@ fn parse_version(version_str: &str) {
                  Consider using the `buildtime_bindgen` feature to generate matching bindings at build time"
             ),
         };
-        let bindings_path = format!("bindings_{}_{arch}_{os}.rs", version.to_binding_version());
+        let bindings_path = format!("bindings_{}_{arch}_{os}.rs", version.as_binding_version());
         let root = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
         let mut bindings = PathBuf::from(root);
         bindings.push("bindings");
@@ -337,11 +358,13 @@ fn parse_version(version_str: &str) {
         panic!("`{version_str}` is not supported by the mysqlclient-sys crate. \
                 Any of the following versions is supported: {possible_versions:?}. \
                 Consider using the `buildtime_bindgen` feature to generate matching bindings at build time. \n\
-                If you set the version via the `MYSQLCLIENT_VERSION` variable make sure that it is a valid semver\
-                version like `8.0.32`");
+                If you set the version via the `MYSQLCLIENT_VERSION` variable make sure that it is a valid semver \
+                version like `8.0.32` that matches a supported version, in this case `MySQL 8.0.x` (remove the \
+                name of the software from a supported version and replace the x with a valid patch number)");
     }
 }
 
+/// Tries to find the package through [`vcpkg`] to know if version retrieval is possible.
 #[cfg(target_env = "msvc")]
 fn try_vcpkg() -> bool {
     if vcpkg::find_package(VCPKG_MYSQL_LIB).is_ok() {
@@ -352,14 +375,20 @@ fn try_vcpkg() -> bool {
     false
 }
 
+/// Tries to find the package through [`vcpkg`] to know if version retrieval is possible (always fails because the target environment isn't msvc).
 #[cfg(not(target_env = "msvc"))]
 fn try_vcpkg() -> bool {
     false
 }
 
+/// Does nothing, since the buildtime_bindgen feature isn't active.
 #[cfg(not(feature = "buildtime_bindgen"))]
 fn autogen_bindings(_target: &str) {}
 
+/// Autogenerates the bindings from the user's given source.
+/// 
+/// # Panics
+/// If the autogeneration failed or the file writing failed.
 #[cfg(feature = "buildtime_bindgen")]
 fn autogen_bindings(target: &str) {
     // if you update the options here you also need to
