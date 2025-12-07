@@ -200,9 +200,10 @@ cmake = "0.1"
 
 [dependencies]
 link-cplusplus = "1.0"
-openssl-sys = { version = "0.9.93", features = ["vendored"] }
-openssl-src = "300.0.0"
+openssl-sys = { version = "0.9.93" }
+openssl-src = { version = "300.0.0", optional = true }
 
 [features]
-default = []
+default = ["with-vendord-openssl"]
 with-asan = []
+with-vendord-openssl = ["openssl-sys/vendored", "dep:openssl-src"]
