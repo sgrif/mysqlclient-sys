@@ -1,10 +1,10 @@
 [package]
 name = "mysqlclient-src"
-version = "0.1.4+9.3.0"
+version = "0.1.5+9.5.0"
 edition = "2021"
 build = "build.rs"
 description = "Bundled version of libmysqlclient"
-license = "GPL-2.0"
+license = "GPL-2.0-only"
 documentation = "https://docs.rs/mysqlclient-src/"
 repository = "https://github.com/sgrif/mysqlclient-sys"
 links = "mysqlclient_sys_src"
