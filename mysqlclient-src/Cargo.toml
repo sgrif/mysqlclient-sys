@@ -1,6 +1,6 @@
 [package]
 name = "mysqlclient-src"
-version = "0.1.5+9.5.0"
+version = "0.2.0+9.5.0"
 edition = "2021"
 build = "build.rs"
 description = "Bundled version of libmysqlclient"
@@ -201,9 +201,7 @@ cmake = "0.1"
 [dependencies]
 link-cplusplus = "1.0"
 openssl-sys = { version = "0.9.93" }
-openssl-src = { version = "300.0.0", optional = true }
 
 [features]
-default = ["with-vendord-openssl"]
+default = []
 with-asan = []
-with-vendord-openssl = ["openssl-sys/vendored", "dep:openssl-src"]

@@ -1,6 +1,6 @@
 [package]
 name = "mysqlclient-sys"
-version = "0.4.8"
+version = "0.5.0"
 description = "Auto-generated rust bindings for libmysqlclient"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/mysqlclient-sys"
@@ -18,7 +18,8 @@ bindgen = { version = "0.72.0", optional = true }
 semver = "1.0.26"
 
 [dependencies]
-mysqlclient-src = { version = "0.1.0", path = "mysqlclient-src", optional = true, default-features = false }
+mysqlclient-src = { version = "0.2.0", path = "mysqlclient-src", optional = true, default-features = false }
+openssl-sys = { version = "0.9.93", optional = true }
 
 [target.'cfg(target_env = "msvc")'.build-dependencies]
 vcpkg = "0.2.4"
@@ -26,8 +27,7 @@ vcpkg = "0.2.4"
 [features]
 default = []
 buildtime_bindgen = ["dep:bindgen"]
-bundled = ["dep:mysqlclient-src", "mysqlclient-src/with-vendord-openssl"]
-bundled_with_system_openssl = ["dep:mysqlclient-src"]
+bundled = ["dep:mysqlclient-src", "dep:openssl-sys"]
 
 [workspace]
 members = ["mysqlclient-src"]

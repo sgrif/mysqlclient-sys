@@ -22,6 +22,15 @@ jobs:
           windows-2025,
         ]
         features: [default, buildtime_bindgen, bundled, bundled_with_system_openssl]
+        include:
+          - target: mysql
+            os: windows-2025
+            install: vcpkg
+            features: buildtime_bindgen
+          - target: mariadb
+            os: windows-202
+            install: vcpkg
+            features: buildtime_bindgen
         exclude:
           # Bundled builds never use MariaDB target
           - target: mariadb
@@ -188,12 +197,12 @@ jobs:
       - name: Check
         shell: bash
         run: |
-          cargo check --no-default-features --features "${{ matrix.features }}" --verbose
+          cargo check --no-default-features --features "${{ matrix.features }}" "${{ matrix.openssl }}" --verbose
 
       - name: Tests
         shell: bash
         run: |
-          cargo test --no-default-features --features "${{ matrix.features }}"
+          cargo test --no-default-features --features "${{ matrix.features }}" "${{ matrix.openssl }}"
 
       - name: Test compile diesel
         shell: bash
@@ -207,10 +216,11 @@ jobs:
           cargo add mysqlclient-sys
           echo "[patch.crates-io]" >> Cargo.toml
           echo "mysqlclient-sys = { path = \"..\" }" >> Cargo.toml
+          echo "openssl-sys = { version = \"0.9.93\" }"
           cat Cargo.toml
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
-          cargo build --features "mysqlclient-sys/${{ matrix.features }}"
+          cargo build --features "mysqlclient-sys/${{ matrix.features }}" "${{ matrix.openssl }}"
 
       - name: Generated bindings.rs
         if: ${{ matrix.os != 'Windows' && !startsWith(matrix.features, 'bundled') }}
@@ -225,4 +235,4 @@ jobs:
           rm -rf test_diesel
           git reset --hard HEAD
           cd mysqlclient-src
-          cargo publish --dry-run
+          cargo package "${{ matrix.openssl }}" 

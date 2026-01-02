@@ -9,8 +9,9 @@ fn main() {
         .define("WITH_EDITLINE", "bundled")
         .build_target("mysqlclient");
 
-    // If the feature `with-vendord-openssl` is used, provide a custom path, else use the default `system`
-    if cfg!(feature = "with-vendord-openssl") && openssl_dir.is_ok() {
+    // If openssl-src appears in the dependency tree just use this, 
+    // otherwise use the default `system`
+    if openssl_dir.is_ok() {
         config.define("WITH_SSL", openssl_dir.unwrap());
     }
 
