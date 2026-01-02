@@ -18,7 +18,7 @@ bindgen = { version = "0.72.0", optional = true }
 semver = "1.0.26"
 
 [dependencies]
-mysqlclient-src = { version = "0.2.0", path = "mysqlclient-src", optional = true, default-features = false }
+mysqlclient-src = { version = "0.1.0", path = "mysqlclient-src", optional = true, default-features = false }
 openssl-sys = { version = "0.9.93", optional = true }
 
 [target.'cfg(target_env = "msvc")'.build-dependencies]

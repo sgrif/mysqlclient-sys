@@ -1,5 +1,5 @@
 #![allow(non_camel_case_types, non_snake_case, non_upper_case_globals)]
-#[cfg(any(feature = "bundled", feature = "bundled_with_system_openssl"))]
+#[cfg(feature = "bundled")]
 extern crate mysqlclient_src;
 
 #[allow(dead_code)]

@@ -59,6 +59,7 @@ include = [
    "/source/README",
    "/source/extra/unordered_dense/",
    "/source/Doxyfile.in",
+   "/source/components/keyrings/common/component_helpers/src/keyring_log_builtins_definition.cc",
    "!/source/sql/mysqld.cc",
    "!/source/sql/sql_yacc.yy",
    "!/source/sql/server_component/mysql_server_event_tracking_bridge_imp.cc",
