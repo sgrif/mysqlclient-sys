@@ -30,7 +30,7 @@ jobs:
             install: vcpkg
             features: buildtime_bindgen
           - target: mariadb
-            os: windows-202
+            os: windows-2025
             install: vcpkg
             features: buildtime_bindgen
         exclude:
