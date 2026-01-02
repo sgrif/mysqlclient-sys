@@ -1,13 +1,18 @@
 fn main() {
-    let openssl_dir = std::env::var("DEP_OPENSSL_ROOT").unwrap();
+    // `DEP_OPENSSL_ROOT` is only set if openssl-src is used
+    let openssl_dir = std::env::var("DEP_OPENSSL_ROOT");
 
     let mut config = cmake::Config::new("source");
 
     config
         .define("WITHOUT_SERVER", "ON")
-        .define("WITH_SSL", openssl_dir)
         .define("WITH_EDITLINE", "bundled")
         .build_target("mysqlclient");
+
+    // If the feature `with-vendord-openssl` is used, provide a custom path, else use the default `system`
+    if cfg!(feature = "with-vendord-openssl") && openssl_dir.is_ok() {
+        config.define("WITH_SSL", openssl_dir.unwrap());
+    }
 
     if cfg!(feature = "with-asan") {
         config.define("WITH_ASAN", "ON");

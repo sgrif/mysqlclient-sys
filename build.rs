@@ -20,7 +20,7 @@ fn main() {
         println!("cargo:rustc-link-lib=advapi32");
     }
 
-    if cfg!(feature = "bundled") {
+    if cfg!(feature = "bundled") || cfg!(feature = "bundled_with_system_openssl") {
         parse_version("9.3.0");
         return;
     }
@@ -299,7 +299,7 @@ impl MysqlVersion {
 }
 
 /// Computes whether a [`str`] representing a [`semver::Version`] (if valid, if not returns false) matches a [`str`] representing a [`semver::VersionReq`].
-/// 
+///
 /// # Panics
 /// If the [`str`] representing the [`semver::VersionReq`] is invalid.
 fn match_semver(version_req: &str, version: &str) -> bool {
@@ -313,7 +313,7 @@ fn match_semver(version_req: &str, version: &str) -> bool {
 }
 
 /// Parses a [`semver`] [`str`] to the version it represents, if it represents one of the valid versions, and configures it, pasting the corresponding bindings to the output directory.
-/// 
+///
 /// # Panics
 /// If the pointer size is not supported (it's neither 32 nor 64), the version_str isn't supported or the file pasting failed.
 fn parse_version(version_str: &str) {
@@ -386,7 +386,7 @@ fn try_vcpkg() -> bool {
 fn autogen_bindings(_target: &str) {}
 
 /// Autogenerates the bindings from the user's given source.
-/// 
+///
 /// # Panics
 /// If the autogeneration failed or the file writing failed.
 #[cfg(feature = "buildtime_bindgen")]
