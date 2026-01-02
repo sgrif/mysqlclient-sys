@@ -14,14 +14,16 @@ jobs:
       fail-fast: false
       matrix:
         target: [mysql, mariadb]
-        os: [
-          ubuntu-latest,
-          ubuntu-24.04-arm,
-          macos-15-intel,
-          macos-15,
-          windows-2025,
-        ]
-        features: [default, buildtime_bindgen, bundled, bundled_with_system_openssl]
+        os:
+          [
+            ubuntu-latest,
+            ubuntu-24.04-arm,
+            macos-15-intel,
+            macos-15,
+            windows-2025,
+          ]
+        features: [default, buildtime_bindgen, bundled]
+        openssl: ["-F openssl-sys/vendored", ""]
         include:
           - target: mysql
             os: windows-2025
@@ -35,11 +37,14 @@ jobs:
           # Bundled builds never use MariaDB target
           - target: mariadb
             features: bundled
-          - target: mariadb
-            features: bundled_with_system_openssl
-          # Building feature `bundled_with_system_openssl` isn't useful on Windows hosts
+          # The openssl feature is only relevant for bundled builds
+          - features: default
+            openssl: "-F openssl-sys/vendored"
+          - features: buildtime_bindgen
+            openssl: "-F openssl-sys/vendored"
+          # Building without system openssl isn't useful on Windows hosts
           - os: windows-2025
-            features: bundled_with_system_openssl
+            openssl: ""
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -197,12 +202,12 @@ jobs:
       - name: Check
         shell: bash
         run: |
-          cargo check --no-default-features --features "${{ matrix.features }}" "${{ matrix.openssl }}" --verbose
+          cargo check --no-default-features --features "${{ matrix.features }}" ${{ matrix.openssl }} --verbose
 
       - name: Tests
         shell: bash
         run: |
-          cargo test --no-default-features --features "${{ matrix.features }}" "${{ matrix.openssl }}"
+          cargo test --no-default-features --features "${{ matrix.features }}" ${{ matrix.openssl }}
 
       - name: Test compile diesel
         shell: bash
@@ -213,14 +218,13 @@ jobs:
           cd test_diesel
           echo "[workspace]" >> Cargo.toml
           cargo add diesel --no-default-features --features "mysql" --git "https://github.com/diesel-rs/diesel/" --branch "main"
-          cargo add mysqlclient-sys
+          cargo add mysqlclient-sys openssl-sys@0.9.93
           echo "[patch.crates-io]" >> Cargo.toml
           echo "mysqlclient-sys = { path = \"..\" }" >> Cargo.toml
-          echo "openssl-sys = { version = \"0.9.93\" }"
           cat Cargo.toml
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
-          cargo build --features "mysqlclient-sys/${{ matrix.features }}" "${{ matrix.openssl }}"
+          cargo build --features "mysqlclient-sys/${{ matrix.features }}" ${{ matrix.openssl }}
 
       - name: Generated bindings.rs
         if: ${{ matrix.os != 'Windows' && !startsWith(matrix.features, 'bundled') }}
@@ -235,4 +239,4 @@ jobs:
           rm -rf test_diesel
           git reset --hard HEAD
           cd mysqlclient-src
-          cargo package "${{ matrix.openssl }}" 
+          cargo package ${{ matrix.openssl }}
