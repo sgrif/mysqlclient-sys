@@ -3,6 +3,13 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.5.0] 2026-01-04
+
+* Add bindings for mysqlclient 9.4 and 9.5
+* Update the bundled client version to 9.5
+* **Breaking**: Change the bundled build to only statically link openssl if the `openssl-sys/vendored` feature is enabled.
+* Fix an build error with newer cmake versions for the bundled build
+
 ## [0.4.7] 2025-06-17
 
 * Update the bundled mysqlclient source version to 0.9.3
