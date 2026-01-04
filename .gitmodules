@@ -1,3 +1,5 @@
 [submodule "mysqlclient-src/source"]
 	path = mysqlclient-src/source
 	url = https://github.com/weiznich/mysql-server/
+	shallow = true
+	sparse-checkout = client cmake CMakeLists.txt components/libminchassis config.h.cmake configure.cmake Doxyfile.in extra/libbacktrace extra/libcno extra/libedit extra/libevent extra/lz4 extra/rapidjson extra/unordered_dense/ extra/xxhash extra/zlib extra/zstd include libchangestreams libmysql libs/mysql libservices MYSQL_VERSION mysql mysys packaging/WiX router/src/harness/include scripts/CMakeLists.txt scripts/comp_sql.cc scripts/mysql_config.sh scripts/mysqlclient.pc.in scripts/mysqld_multi.pl.in scripts/mysqld_safe.sh scripts/mysqldumpslow.pl.in scripts/sys_schema/CMakeLists.txt share sql-common/ sql/ storage/ndb/cmake storage/ndb/CMakeLists.txt strings utilities vio

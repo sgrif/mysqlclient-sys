@@ -15,11 +15,11 @@ pub const MYSQL_CLIENT_TELEMETRY_PLUGIN_INTERFACE_VERSION: u32 = 512;
 pub const MYSQL_CLIENT_MAX_PLUGINS: u32 = 5;
 pub const MYSQL_CLIENT_PLUGIN_AUTHOR_ORACLE: &[u8; 19] = b"Oracle Corporation\0";
 pub const MYSQL_USERNAME_LENGTH: u32 = 96;
-pub const MYSQL_SERVER_VERSION: &[u8; 6] = b"8.4.3\0";
-pub const MYSQL_BASE_VERSION: &[u8; 11] = b"mysqld-8.4\0";
-pub const MYSQL_SERVER_SUFFIX_DEF: &[u8; 1] = b"\0";
-pub const MYSQL_VERSION_ID: u32 = 80403;
-pub const MYSQL_VERSION_MATURITY: &[u8; 4] = b"LTS\0";
+pub const MYSQL_SERVER_VERSION: &[u8; 6] = b"9.5.0\0";
+pub const MYSQL_BASE_VERSION: &[u8; 11] = b"mysqld-9.5\0";
+pub const MYSQL_VERSION_ID: u32 = 90500;
+pub const MYSQL_VERSION_MATURITY: &[u8; 11] = b"INNOVATION\0";
+pub const MYSQL_VERSION_MATURITY_IS_LTS: u32 = 0;
 pub const MYSQL_PORT: u32 = 3306;
 pub const MYSQL_ADMIN_PORT: u32 = 33062;
 pub const MYSQL_PORT_DEFAULT: u32 = 0;
@@ -65,6 +65,7 @@ pub enum enum_field_types {
     MYSQL_TYPE_TIME2 = 19,
     #[doc = "< Used for replication only"]
     MYSQL_TYPE_TYPED_ARRAY = 20,
+    MYSQL_TYPE_VECTOR = 242,
     MYSQL_TYPE_INVALID = 243,
     #[doc = "< Currently just a placeholder"]
     MYSQL_TYPE_BOOL = 244,
@@ -476,6 +477,7 @@ pub struct MYSQL_PLUGIN_VIO_INFO {
     pub protocol: MYSQL_PLUGIN_VIO_INFO__bindgen_ty_1,
     #[doc = "< it's set, if the protocol is SOCKET or TCP"]
     pub socket: ::std::os::raw::c_int,
+    pub is_tls_established: bool,
 }
 pub const MYSQL_PLUGIN_VIO_INFO_MYSQL_VIO_INVALID: MYSQL_PLUGIN_VIO_INFO__bindgen_ty_1 =
     MYSQL_PLUGIN_VIO_INFO__bindgen_ty_1::MYSQL_VIO_INVALID;
@@ -499,13 +501,15 @@ pub enum MYSQL_PLUGIN_VIO_INFO__bindgen_ty_1 {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of MYSQL_PLUGIN_VIO_INFO"][::std::mem::size_of::<MYSQL_PLUGIN_VIO_INFO>() - 8usize];
+    ["Size of MYSQL_PLUGIN_VIO_INFO"][::std::mem::size_of::<MYSQL_PLUGIN_VIO_INFO>() - 12usize];
     ["Alignment of MYSQL_PLUGIN_VIO_INFO"]
         [::std::mem::align_of::<MYSQL_PLUGIN_VIO_INFO>() - 4usize];
     ["Offset of field: MYSQL_PLUGIN_VIO_INFO::protocol"]
         [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, protocol) - 0usize];
     ["Offset of field: MYSQL_PLUGIN_VIO_INFO::socket"]
         [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, socket) - 4usize];
+    ["Offset of field: MYSQL_PLUGIN_VIO_INFO::is_tls_established"]
+        [::std::mem::offset_of!(MYSQL_PLUGIN_VIO_INFO, is_tls_established) - 8usize];
 };
 #[repr(u32)]
 #[non_exhaustive]

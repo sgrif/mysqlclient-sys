@@ -1,10 +1,10 @@
 [package]
 name = "mysqlclient-src"
-version = "0.1.4+9.3.0"
+version = "0.2.0+9.5.0"
 edition = "2021"
 build = "build.rs"
 description = "Bundled version of libmysqlclient"
-license = "GPL-2.0"
+license = "GPL-2.0-only"
 documentation = "https://docs.rs/mysqlclient-src/"
 repository = "https://github.com/sgrif/mysqlclient-sys"
 links = "mysqlclient_sys_src"
@@ -59,6 +59,7 @@ include = [
    "/source/README",
    "/source/extra/unordered_dense/",
    "/source/Doxyfile.in",
+   "/source/components/keyrings/common/component_helpers/src/keyring_log_builtins_definition.cc",
    "!/source/sql/mysqld.cc",
    "!/source/sql/sql_yacc.yy",
    "!/source/sql/server_component/mysql_server_event_tracking_bridge_imp.cc",
@@ -200,8 +201,7 @@ cmake = "0.1"
 
 [dependencies]
 link-cplusplus = "1.0"
-openssl-sys = { version = "0.9.93", features = ["vendored"] }
-openssl-src = "300.0.0"
+openssl-sys = { version = "0.9.93" }
 
 [features]
 default = []
