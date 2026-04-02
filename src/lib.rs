@@ -43,12 +43,6 @@ pub mod mysql_option {
     /// that's not supported, do not use it
     pub const MYSQL_OPT_SSL_MODE: crate::bindings::mysql_option =
         crate::bindings::mysql_option::MYSQL_SERVER_PUBLIC_KEY;
-    pub const MYSQL_OPT_SSL_CA: crate::bindings::mysql_option =
-        crate::bindings::mysql_option::MYSQL_OPT_SSL_CA;
-    pub const MYSQL_OPT_SSL_CERT: crate::bindings::mysql_option =
-        crate::bindings::mysql_option::MYSQL_OPT_SSL_CERT;
-    pub const MYSQL_OPT_SSL_KEY: crate::bindings::mysql_option =
-        crate::bindings::mysql_option::MYSQL_OPT_SSL_KEY;
-    pub const MYSQL_SET_CHARSET_NAME: crate::bindings::mysql_option =
-        crate::bindings::mysql_option::MYSQL_SET_CHARSET_NAME;
+
+    pub use crate::bindings::mysql_option::*;
 }
