@@ -10,7 +10,7 @@ links = "mysqlclient"
 edition = "2021"
 keywords = ["bindings", "libmysqlclient", "mysqlclient-sys"]
 categories = ["database", "external-ffi-bindings"]
-include = ["src/**/*.rs", "Cargo.toml", "bindings/**/*.rs", "README.md", "LICENSE-MIT", "LICENSE-APACHE", "build.rs"]
+include = ["src/**/*.rs", "Cargo.toml", "bindings/**/*.rs", "bindings/wrapper.h", "README.md", "LICENSE-MIT", "LICENSE-APACHE", "build.rs"]
 
 [build-dependencies]
 pkg-config = "0.3.9"
