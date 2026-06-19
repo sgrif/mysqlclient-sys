@@ -6,6 +6,13 @@ on:
       - master
 
 name: CI Tests
+permissions:
+  contents: "read"
+# See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency.
+# This will ensure that only one commit will be running tests at a time on each PR.
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   check_and_test:
@@ -19,7 +26,7 @@ jobs:
             ubuntu-latest,
             ubuntu-24.04-arm,
             macos-15-intel,
-            macos-15,
+            macos-26,
             windows-2025,
           ]
         features: [default, buildtime_bindgen, bundled]
@@ -49,13 +56,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
           submodules: recursive
           persist-credentials: false
 
       - name: Cache cargo registry
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@f51f967e158417aafa338a1e46ab22095f07aa01 # v2.8.2
         with:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
 
@@ -79,13 +86,6 @@ jobs:
           sudo systemctl start mysql.service
           sudo apt-get update
           sudo apt-get -y install libmysqlclient-dev
-
-      - name: Install dependencies (Linux)
-        if: ${{ runner.os == 'Linux' && startsWith(matrix.features, 'bundled') }}
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install libtirpc-dev
 
       - name: Install MariaDB Client Libs and Server (Linux)
         if: ${{ runner.os == 'Linux' && matrix.target == 'mariadb' }}
@@ -125,7 +125,7 @@ jobs:
           echo "PKG_CONFIG_PATH=/usr/local/opt/mariadb@10.6/lib/pkgconfig" >> $GITHUB_ENV
 
       - name: Install MySQL (MacOS M1)
-        if: ${{ matrix.os == 'macos-15' && matrix.target == 'mysql' && !startsWith(matrix.features, 'bundled') }}
+        if: ${{ matrix.os == 'macos-26' && matrix.target == 'mysql' && !startsWith(matrix.features, 'bundled') }}
         run: |
           brew update
           brew install mysql@8.4
@@ -138,7 +138,7 @@ jobs:
           echo "MYSQLCLIENT_VERSION=8.4" >> $GITHUB_ENV
 
       - name: Install MariaDB latest (MacOS M1)
-        if: ${{ matrix.os == 'macos-15' && matrix.target == 'mariadb' }}
+        if: ${{ matrix.os == 'macos-26' && matrix.target == 'mariadb' }}
         run: |
           brew update
           brew install mariadb@11.4
@@ -156,14 +156,14 @@ jobs:
 
       - name: Install MySQL (Windows)
         if: ${{ runner.os == 'Windows' && matrix.target == 'mysql' && !startsWith(matrix.features, 'bundled') }}
-        shell: cmd
+        shell: bash
         run: |
           curl -L https://dev.mysql.com/get/Downloads/MySQL-8.4/mysql-8.4.0-winx64.zip -o library.zip
           unzip library.zip
 
       - name: Install MariaDB (Windows)
         if: ${{ runner.os == 'Windows' && matrix.target == 'mariadb' }}
-        shell: cmd
+        shell: bash
         run: |
           curl -L https://archive.mariadb.org/mariadb-11.5.2/winx64-packages/mariadb-11.5.2-winx64.zip -o library.zip
           unzip library.zip
@@ -171,19 +171,23 @@ jobs:
       - name: Set variables for mysql (Windows)
         if: ${{ runner.os == 'Windows' && matrix.target == 'mysql' && !startsWith(matrix.features, 'bundled') }}
         shell: bash
+        env:
+          WORKSPACE: ${{ github.workspace }}
         run: |
-          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mysql-8.4.0-winx64/lib/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=$WORKSPACE/mysql-8.4.0-winx64/lib/" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=8.4.0" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_INCLUDE_DIR=${{github.workspace}}/mysql-8.4.0-winx64/include" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_INCLUDE_DIR=$WORKSPACE/mysql-8.4.0-winx64/include" >> $GITHUB_ENV
           dir ./mysql-8.4.0-winx64/lib
           dir ./mysql-8.4.0-winx64/include
 
       - name: Set variables for MariaDB (Windows)
         if: ${{ runner.os == 'Windows' && matrix.target == 'mariadb' }}
         shell: bash
+        env:
+          WORKSPACE: ${{ github.workspace }}
         run: |
-          echo "MYSQLCLIENT_LIB_DIR=${{github.workspace}}/mariadb-11.5.2-winx64/lib/" >> $GITHUB_ENV
-          echo "MYSQLCLIENT_INCLUDE_DIR=${{github.workspace}}/mariadb-11.5.2-winx64/include/mysql/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_LIB_DIR=$WORKSPACE/mariadb-11.5.2-winx64/lib/" >> $GITHUB_ENV
+          echo "MYSQLCLIENT_INCLUDE_DIR=$WORKSPACE/mariadb-11.5.2-winx64/include/mysql/" >> $GITHUB_ENV
           echo "MYSQLCLIENT_VERSION=11.5.2" >> $GITHUB_ENV
           echo "MYSQLCLIENT_LIBNAME=mariadbclient" >> $GITHUB_ENV
           dir ./mariadb-11.5.2-winx64/lib
@@ -197,22 +201,36 @@ jobs:
           echo OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl >> $GITHUB_ENV
 
       - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        run: |
+          rustup update stable
+          rustup override set stable
+          rustup component add rustfmt
+          cargo --version
+          rustc --version
 
       - name: Check
         shell: bash
+        env:
+          FEATURES: ${{ matrix.features }}
+          OPENSSL: ${{ matrix.openssl }}
         run: |
-          cargo check --no-default-features --features "${{ matrix.features }}" ${{ matrix.openssl }} --verbose
+          cargo check --no-default-features --features "$FEATURES" $OPENSSL --verbose
 
       - name: Tests
         shell: bash
+        env:
+          FEATURES: ${{ matrix.features }}
+          OPENSSL: ${{ matrix.openssl }}
         run: |
-          cargo test --no-default-features --features "${{ matrix.features }}" ${{ matrix.openssl }}
+          cargo test --no-default-features --features "$FEATURES" $OPENSSL
 
       - name: Test compile diesel
         shell: bash
         # allow to fail as diesel might not pull in the right feature yet
         continue-on-error: true
+        env:
+          FEATURES: ${{ matrix.features }}
+          OPENSSL: ${{ matrix.openssl }}
         run: |
           cargo new test_diesel
           cd test_diesel
@@ -224,7 +242,7 @@ jobs:
           cat Cargo.toml
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { MysqlConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
-          cargo build --features "mysqlclient-sys/${{ matrix.features }}" ${{ matrix.openssl }}
+          cargo build --features "mysqlclient-sys/$FEATURES" $OPENSSL
 
       - name: Generated bindings.rs
         if: ${{ matrix.os != 'Windows' && !startsWith(matrix.features, 'bundled') }}
@@ -235,8 +253,10 @@ jobs:
       - name: Test all files included
         shell: bash
         if: ${{ matrix.features == 'bundled' }}
+        env:
+          OPENSSL: ${{ matrix.openssl }}
         run: |
           rm -rf test_diesel
           git reset --hard HEAD
           cd mysqlclient-src
-          cargo package ${{ matrix.openssl }}
+          cargo package $OPENSSL
