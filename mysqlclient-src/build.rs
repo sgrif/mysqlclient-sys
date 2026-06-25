@@ -1,4 +1,9 @@
 fn main() {
+    let ptr_width = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("This is set by cargo");
+    if ptr_width != "64" {
+        panic!("libmysqlclient only supports 64 bit platforms, but the target platform uses {ptr_width} bit pointers");
+    }
+
     // `DEP_OPENSSL_ROOT` is only set if openssl-src is used
     let openssl_dir = std::env::var("DEP_OPENSSL_ROOT");
 
@@ -9,7 +14,7 @@ fn main() {
         .define("WITH_EDITLINE", "bundled")
         .build_target("mysqlclient");
 
-    // If openssl-src appears in the dependency tree just use this, 
+    // If openssl-src appears in the dependency tree just use this,
     // otherwise use the default `system`
     if openssl_dir.is_ok() {
         config.define("WITH_SSL", openssl_dir.unwrap());
