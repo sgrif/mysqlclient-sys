@@ -3,6 +3,10 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.2.3] 2026-11-12
+
+* Allow the bundled mysqlclient version to support openssl 4
+
 ## [0.5.3] 2026-11-12
 
 * Fix detecting the right version via `pkg-config` for mysqlclient installs on Ubuntu
