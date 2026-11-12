@@ -262,7 +262,11 @@ impl MysqlVersion {
             Some(Self::Mysql82)
         } else if version.starts_with("8.3") || version.starts_with("23.") || version == "23" {
             Some(Self::Mysql83)
-        } else if version.starts_with("8.4") || version.starts_with("24.0") || version == "24" {
+        } else if version.starts_with("8.4")
+            || version.starts_with("24.0")
+            || version.starts_with("24.2")
+            || version == "24"
+        {
             Some(Self::Mysql84)
         } else if version.starts_with("9.0") {
             Some(Self::Mysql90)
