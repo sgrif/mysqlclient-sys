@@ -52,6 +52,11 @@ jobs:
           # Building without system openssl isn't useful on Windows hosts
           - os: windows-2025
             openssl: ""
+          # too slow, struggles with building mysql
+          - os: macos-15-intel
+            features: buildtime_bindgen
+          - os: macos-15-intel
+            features: default
 
     runs-on: ${{ matrix.os }}
     steps:
