@@ -339,6 +339,7 @@ fn parse_version(version_str: &str) {
         println!("cargo::rustc-check-cfg=cfg({})", v.as_cfg());
     }
     let version = MysqlVersion::parse_version(version_str);
+    let buildtime_bindgen = env::var_os("CARGO_FEATURE_BUILDTIME_BINDGEN").is_some();
 
     let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
     let ptr_size = std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
@@ -349,7 +350,7 @@ fn parse_version(version_str: &str) {
 
     if let Some(version) = version {
         println!("cargo:rustc-cfg={}", version.as_cfg());
-        if cfg!(feature = "buildtime_bindgen") {
+        if buildtime_bindgen {
             return;
         }
         let os = if is_windows { "windows" } else { "linux" };
@@ -368,7 +369,7 @@ fn parse_version(version_str: &str) {
         bindings.push("bindings");
         bindings.push(bindings_path);
         std::fs::copy(bindings, bindings_target).unwrap();
-    } else {
+    } else if !buildtime_bindgen {
         let possible_versions = MysqlVersion::ALL
             .iter()
             .map(|v| v.as_display_version())
