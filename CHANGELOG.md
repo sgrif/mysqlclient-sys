@@ -3,6 +3,11 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## Unreleased
+
+* Detect the mysqlclient/libmariadb version from the installed headers instead of the shared library version reported by `pkg-config`. This fixes picking the wrong (or no) bindings on Fedora and other distributions
+* Add bindings for mysqlclient 9.6 and 9.7
+
 ## [0.2.3] 2026-11-12
 
 * Allow the bundled mysqlclient version to support openssl 4

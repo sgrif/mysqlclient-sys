@@ -62,7 +62,13 @@ fn main() {
             println!("cargo::rerun-if-changed={}", link.display());
         }
         // pkg_config did everything but the version flags for us
-        parse_version(&lib.version);
+        //
+        // The `Version` field of `mysqlclient.pc` contains the version of the
+        // shared library (e.g. `24.2.4` for MySQL 9.7.4), not the MySQL version.
+        // That number is ambiguous, so prefer the version from the headers we
+        // are going to compile against and only fall back to the pkg-config version
+        let version = version_from_headers(&lib.include_paths).unwrap_or(lib.version);
+        parse_version(&version);
         return;
     } else if try_vcpkg() {
         // vcpkg did everything for us
@@ -77,8 +83,15 @@ fn main() {
     {
         println!("cargo:rustc-link-search=native={path}");
         println!("cargo:rustc-link-lib={link_specifier}{libname}");
-        if let Ok(version) =
-            env::var("MYSQLCLIENT_VERSION").or(env::var(format!("MYSQLCLIENT_VERSION_{target}")))
+        if let Some(version) = env::var("MYSQLCLIENT_VERSION")
+            .or(env::var(format!("MYSQLCLIENT_VERSION_{target}")))
+            .ok()
+            .or_else(|| {
+                let include_dir = env::var("MYSQLCLIENT_INCLUDE_DIR")
+                    .or(env::var(format!("MYSQLCLIENT_INCLUDE_DIR_{target}")))
+                    .ok()?;
+                version_from_headers(&[PathBuf::from(include_dir)])
+            })
         {
             parse_version(&version);
             return;
@@ -119,6 +132,58 @@ fn main() {
               the compiler
     "#
     );
+}
+
+/// Determines the client library version by inspecting the version headers
+/// found in one of the given include directories.
+///
+/// For MariaDB Connector/C this returns the connector version from
+/// `mariadb_version.h` (e.g. `3.4.9`), for MySQL the library version from
+/// `mysql_version.h` (e.g. `9.7.4`).
+fn version_from_headers(include_paths: &[PathBuf]) -> Option<String> {
+    // Headers might be included as `<mysql.h>` or as `<mysql/mysql.h>`,
+    // so also look into the relevant subdirectories
+    let candidate_dirs = include_paths
+        .iter()
+        .flat_map(|p| [p.clone(), p.join("mysql"), p.join("mariadb")]);
+    for dir in candidate_dirs {
+        // MariaDB also ships a `mysql_version.h`, but with the server version
+        // (`11.8.6-MariaDB`) in it, so check for the MariaDB header first.
+        let mariadb_header = dir.join("mariadb_version.h");
+        if let Ok(content) = std::fs::read_to_string(&mariadb_header) {
+            if let Some(version) = header_define(&content, "MARIADB_PACKAGE_VERSION") {
+                println!("cargo::rerun-if-changed={}", mariadb_header.display());
+                return Some(version);
+            }
+        }
+        let mysql_header = dir.join("mysql_version.h");
+        if let Ok(content) = std::fs::read_to_string(&mysql_header) {
+            if let Some(version) = header_define(&content, "LIBMYSQL_VERSION")
+                .or_else(|| header_define(&content, "MYSQL_SERVER_VERSION"))
+            {
+                println!("cargo::rerun-if-changed={}", mysql_header.display());
+                return Some(version);
+            }
+        }
+    }
+    None
+}
+
+/// Extracts the string value of `#define {name} "value"` from the given header content.
+fn header_define(content: &str, name: &str) -> Option<String> {
+    content.lines().find_map(|line| {
+        let rest = line.trim_start().strip_prefix('#')?.trim_start();
+        let rest = rest.strip_prefix("define")?;
+        let rest = rest
+            .strip_prefix(|c: char| c.is_ascii_whitespace())?
+            .trim_start();
+        let rest = rest.strip_prefix(name)?;
+        // make sure we don't match e.g. `LIBMYSQL_VERSION_ID`
+        let value = rest.strip_prefix(|c: char| c.is_ascii_whitespace())?.trim();
+        let value = value.strip_prefix('"')?;
+        let value = &value[..value.find('"')?];
+        Some(value.to_string())
+    })
 }
 
 /// Retrieves the value that `mysql_config` provides for `var_name` if the execution of the command succeeded.
