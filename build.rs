@@ -213,6 +213,8 @@ enum MysqlVersion {
     Mysql93,
     Mysql94,
     Mysql95,
+    Mysql96,
+    Mysql97,
     MariaDb31,
     MariaDb33,
     MariaDb34,
@@ -233,6 +235,8 @@ impl MysqlVersion {
         Self::Mysql93,
         Self::Mysql94,
         Self::Mysql95,
+        Self::Mysql96,
+        Self::Mysql97,
         Self::MariaDb31,
         Self::MariaDb33,
         Self::MariaDb34,
@@ -253,6 +257,8 @@ impl MysqlVersion {
             MysqlVersion::Mysql93 => "mysql_9_3_x",
             MysqlVersion::Mysql94 => "mysql_9_4_x",
             MysqlVersion::Mysql95 => "mysql_9_5_x",
+            MysqlVersion::Mysql96 => "mysql_9_6_x",
+            MysqlVersion::Mysql97 => "mysql_9_7_x",
             MysqlVersion::MariaDb31 => "mariadb_3_1_x",
             MysqlVersion::MariaDb33 => "mariadb_3_3_x",
             MysqlVersion::MariaDb34 => "mariadb_3_4_x",
@@ -274,6 +280,8 @@ impl MysqlVersion {
             MysqlVersion::Mysql93 => "9_3_0",
             MysqlVersion::Mysql94 => "9_4_0",
             MysqlVersion::Mysql95 => "9_5_0",
+            MysqlVersion::Mysql96 => "9_6_0",
+            MysqlVersion::Mysql97 => "9_7_4",
             MysqlVersion::MariaDb31 => "mariadb_3_1_27",
             MysqlVersion::MariaDb33 => "mariadb_3_3_14",
             MysqlVersion::MariaDb34 => "mariadb_3_4_4",
@@ -345,6 +353,10 @@ impl MysqlVersion {
             Some(Self::Mysql94)
         } else if version.starts_with("9.5") {
             Some(Self::Mysql95)
+        } else if version.starts_with("9.6") {
+            Some(Self::Mysql96)
+        } else if version.starts_with("9.7") {
+            Some(Self::Mysql97)
         } else if version.starts_with("3.1") || match_semver(">=10.2.0, <10.6.0", version) {
             Some(Self::MariaDb31)
         } else if version.starts_with("3.2")
@@ -374,6 +386,8 @@ impl MysqlVersion {
             MysqlVersion::Mysql93 => "MySQL 9.3.x",
             MysqlVersion::Mysql94 => "MySQL 9.4.x",
             MysqlVersion::Mysql95 => "MySQL 9.5.x",
+            MysqlVersion::Mysql96 => "MySQL 9.6.x",
+            MysqlVersion::Mysql97 => "MySQL 9.7.x",
             MysqlVersion::MariaDb31 => "MariaDB 3.1.x",
             MysqlVersion::MariaDb33 => "MariaDB 3.3.x",
             MysqlVersion::MariaDb34 => "MariaDB 3.4.x",

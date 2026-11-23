@@ -14,7 +14,7 @@ include = ["src/**/*.rs", "Cargo.toml", "bindings/**/*.rs", "bindings/wrapper.h"
 
 [build-dependencies]
 pkg-config = "0.3.9"
-bindgen = { version = "0.72.0", optional = true }
+bindgen = { version = "0.73.2", optional = true }
 semver = "1.0.26"
 
 [dependencies]
