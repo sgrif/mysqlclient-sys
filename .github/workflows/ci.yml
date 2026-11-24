@@ -31,6 +31,9 @@ jobs:
           ]
         features: [default, buildtime_bindgen, bundled]
         openssl: ["-F openssl-sys/vendored", ""]
+        # Rust target to build for, empty means the native host target.
+        # Additional targets are added via `include` below
+        rust_target: [""]
         include:
           - target: mysql
             os: windows-2025
@@ -40,6 +43,18 @@ jobs:
             os: windows-2025
             install: vcpkg
             features: buildtime_bindgen
+          # Cross compile the bundled version for musl, there is
+          # no system openssl for musl so it needs to be vendored
+          - target: mysql
+            os: ubuntu-latest
+            features: bundled
+            openssl: "-F openssl-sys/vendored"
+            rust_target: x86_64-unknown-linux-musl
+          - target: mysql
+            os: ubuntu-24.04-arm
+            features: bundled
+            openssl: "-F openssl-sys/vendored"
+            rust_target: aarch64-unknown-linux-musl
         exclude:
           # Bundled builds never use MariaDB target
           - target: mariadb
@@ -69,7 +84,7 @@ jobs:
       - name: Cache cargo registry
         uses: Swatinem/rust-cache@f51f967e158417aafa338a1e46ab22095f07aa01 # v2.8.2
         with:
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-${{ matrix.rust_target }}-cargo-${{ hashFiles('**/Cargo.toml') }}
 
       - name: Set environment variables
         shell: bash
@@ -205,6 +220,75 @@ jobs:
           echo "OPENSSL_RUST_USE_NASM=0" >> $GITHUB_ENV
           echo OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl >> $GITHUB_ENV
 
+      - name: Install musl toolchain (Linux x86_64)
+        if: ${{ runner.os == 'Linux' && matrix.rust_target == 'x86_64-unknown-linux-musl' }}
+        shell: bash
+        env:
+          # Prebuilt musl gcc/g++ toolchain from https://toolchains.bootlin.com/
+          # Ubuntu only packages a musl C compiler (musl-tools), but building
+          # libmysqlclient requires a C++ compiler + libstdc++ for musl as well
+          MUSL_TOOLCHAIN: x86-64--musl--stable-2026.08-1
+          MUSL_TOOLCHAIN_SHA256: 78d3a4683d6ac47b5ee73bd5bce210b55eb93dff1b137c61298af97eb0d2b5a6
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install cmake make perl pkg-config xz-utils curl
+          curl -fsSL --retry 5 --retry-all-errors \
+            -o "$RUNNER_TEMP/$MUSL_TOOLCHAIN.tar.xz" \
+            "https://toolchains.bootlin.com/downloads/releases/toolchains/x86-64/tarballs/$MUSL_TOOLCHAIN.tar.xz"
+          echo "$MUSL_TOOLCHAIN_SHA256  $RUNNER_TEMP/$MUSL_TOOLCHAIN.tar.xz" | sha256sum -c -
+          tar -xJf "$RUNNER_TEMP/$MUSL_TOOLCHAIN.tar.xz" -C "$RUNNER_TEMP"
+          "$RUNNER_TEMP/$MUSL_TOOLCHAIN/relocate-sdk.sh" > /dev/null
+          TOOLCHAIN_BIN="$RUNNER_TEMP/$MUSL_TOOLCHAIN/bin"
+          PREFIX="$TOOLCHAIN_BIN/x86_64-buildroot-linux-musl"
+          "$PREFIX-g++" --version
+          echo "$TOOLCHAIN_BIN" >> $GITHUB_PATH
+          echo "CC_x86_64_unknown_linux_musl=$PREFIX-gcc" >> $GITHUB_ENV
+          echo "CXX_x86_64_unknown_linux_musl=$PREFIX-g++" >> $GITHUB_ENV
+          echo "AR_x86_64_unknown_linux_musl=$PREFIX-ar" >> $GITHUB_ENV
+          echo "RANLIB_x86_64_unknown_linux_musl=$PREFIX-ranlib" >> $GITHUB_ENV
+          echo "CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=$PREFIX-gcc" >> $GITHUB_ENV
+
+      - name: Install musl toolchain (Linux aarch64)
+        if: ${{ runner.os == 'Linux' && matrix.rust_target == 'aarch64-unknown-linux-musl' }}
+        shell: bash
+        env:
+          # Bootlin only provides toolchains that run on x86_64 hosts.
+          # Instead use an Alpine Linux root filesystem as sysroot
+          # (musl, libstdc++ and the gcc runtime) and compile with the
+          # host clang/lld
+          ALPINE_VERSION: 3.24.4
+          ALPINE_SHA256: 4b14c18f7e90a063b61462ea1462a5732c154bf6adad594974fe6487cd98a8de
+          ARCH: aarch64
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install cmake make perl pkg-config curl clang lld llvm
+          ROOTFS="$RUNNER_TEMP/alpine-$ARCH"
+          TARBALL="$RUNNER_TEMP/alpine-minirootfs-$ALPINE_VERSION-$ARCH.tar.gz"
+          curl -fsSL --retry 5 --retry-all-errors -o "$TARBALL" \
+            "https://dl-cdn.alpinelinux.org/alpine/v${ALPINE_VERSION%.*}/releases/$ARCH/alpine-minirootfs-$ALPINE_VERSION-$ARCH.tar.gz"
+          echo "$ALPINE_SHA256  $TARBALL" | sha256sum -c -
+          mkdir -p "$ROOTFS"
+          tar -xzf "$TARBALL" -C "$ROOTFS"
+          # host and rootfs share the same architecture, so apk can run in a chroot
+          cp /etc/resolv.conf "$ROOTFS/etc/resolv.conf"
+          sudo chroot "$ROOTFS" /sbin/apk add --no-cache g++ linux-headers
+          GCC_DIR=$(echo "$ROOTFS"/usr/lib/gcc/$ARCH-alpine-linux-musl/*)
+          BIN="$RUNNER_TEMP/musl-bin"
+          mkdir -p "$BIN"
+          for tool in gcc:clang g++:clang++; do
+            cat > "$BIN/$ARCH-linux-musl-${tool%%:*}" <<EOF
+          #!/bin/sh
+          exec ${tool##*:} --target=$ARCH-alpine-linux-musl --sysroot="$ROOTFS" --gcc-install-dir="$GCC_DIR" -fuse-ld=lld "\$@"
+          EOF
+            chmod +x "$BIN/$ARCH-linux-musl-${tool%%:*}"
+          done
+          "$BIN/$ARCH-linux-musl-g++" --version
+          echo "CC_aarch64_unknown_linux_musl=$BIN/$ARCH-linux-musl-gcc" >> $GITHUB_ENV
+          echo "CXX_aarch64_unknown_linux_musl=$BIN/$ARCH-linux-musl-g++" >> $GITHUB_ENV
+          echo "AR_aarch64_unknown_linux_musl=llvm-ar" >> $GITHUB_ENV
+          echo "RANLIB_aarch64_unknown_linux_musl=llvm-ranlib" >> $GITHUB_ENV
+          echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_MUSL_LINKER=$BIN/$ARCH-linux-musl-gcc" >> $GITHUB_ENV
+
       - name: Install rust toolchain
         run: |
           rustup update stable
@@ -212,6 +296,16 @@ jobs:
           rustup component add rustfmt
           cargo --version
           rustc --version
+
+      - name: Set cargo target
+        if: ${{ matrix.rust_target != '' }}
+        shell: bash
+        env:
+          RUST_TARGET: ${{ matrix.rust_target }}
+        run: |
+          rustup target add "$RUST_TARGET"
+          # picked up by all following cargo invocations
+          echo "CARGO_BUILD_TARGET=$RUST_TARGET" >> $GITHUB_ENV
 
       - name: Check
         shell: bash
