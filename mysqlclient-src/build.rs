@@ -12,6 +12,17 @@ fn main() {
     config
         .define("WITHOUT_SERVER", "ON")
         .define("WITH_EDITLINE", "bundled")
+        // The optional client authentication plugins (webauthn, kerberos, ldap, oci, …)
+        // are built as separate shared libraries and are not part of
+        // libmysqlclient itself. Disable them to avoid requiring additional
+        // system libraries like libfido2/libudev/libcurl.
+        .define("WITH_AUTHENTICATION_WEBAUTHN", "OFF")
+        .define("WITH_AUTHENTICATION_CLIENT_PLUGINS", "OFF")
+        .define("WITH_FIDO", "none")
+        // curl is only used by server components and client plugins, not by
+        // libmysqlclient. Since 26.x the configure step requires the system
+        // curl development files by default (or builds the bundled one on windows).
+        .define("WITH_CURL", "none")
         .build_target("mysqlclient");
 
     // If openssl-src appears in the dependency tree just use this,
