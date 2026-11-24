@@ -23,16 +23,15 @@ versions['8.1.0']="https://downloads.mysql.com/archives/get/p/23/file/libmysqlcl
 versions['8.0.39']="https://downloads.mysql.com/archives/get/p/23/file/libmysqlclient-dev_8.0.39-1debian12_amd64.deb"
 versions['5.7.42']="https://downloads.mysql.com/archives/get/p/23/file/libmysqlclient-dev_5.7.42-1debian10_amd64.deb"
 
+# Newer MariaDB Connector/C releases are only published as source tarballs,
+# so the headers are generated via cmake (see below)
 declare -A mariadb_versions
-# 10.5.20
-mariadb_versions['3.1.27']="https://dlm.mariadb.com/4048058/Connectors/c/connector-c-3.1.27/mariadb-connector-c-3.1.27-debian-buster-amd64.tar.gz"
-# 10.8.8
-mariadb_versions['3.3.14']="https://dlm.mariadb.com/4047928/Connectors/c/connector-c-3.3.14/mariadb-connector-c-3.3.14-debian-buster-amd64.tar.gz"
-# 10.8.8
-mariadb_versions['3.4.4']="https://dlm.mariadb.com/4047886/Connectors/c/connector-c-3.4.4/mariadb-connector-c-3.4.4-debian-buster-amd64.tar.gz"
+mariadb_versions['3.1.28']="https://downloads.mariadb.org/rest-api/connector-c/3.1.28/mariadb-connector-c-3.1.28-src.tar.gz"
+mariadb_versions['3.3.21']="https://downloads.mariadb.org/rest-api/connector-c/3.3.21/mariadb-connector-c-3.3.21-src.tar.gz"
+mariadb_versions['3.4.11']="https://downloads.mariadb.org/rest-api/connector-c/3.4.11/mariadb-connector-c-3.4.11-src.tar.gz"
 
 apt update
-apt install -y binutils xz-utils curl libclang-dev gcc mingw-w64 gcc-i686-linux-gnu clang gcc-arm-linux-gnueabi
+apt install -y binutils xz-utils curl libclang-dev gcc mingw-w64 gcc-i686-linux-gnu clang gcc-arm-linux-gnueabi cmake libssl-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal -y -c rustfmt
 . "/root/.cargo/env"
 cargo install bindgen-cli@0.73.2
@@ -72,8 +71,12 @@ for version in "${!mariadb_versions[@]}"; do
     cd /scratch
     curl -L "${mariadb_versions[$version]}" -o out.tar.gz
     tar -xf out.tar.gz
+    # configure the sources to generate `mariadb_version.h` and install only the headers
+    # (same layout as in the binary releases)
+    cmake -S mariadb-connector-c-*-src -B build -DCMAKE_INSTALL_PREFIX=/usr/local -DWITH_UNIT_TESTS=OFF
+    DESTDIR=/scratch/install cmake -DCMAKE_INSTALL_COMPONENT=Development -P build/include/cmake_install.cmake
     mkdir -p usr/include/mysql/
-    cp -r mariadb-connector-c-*/include/mariadb/* usr/include/mysql/
+    cp -r install/usr/local/include/mariadb/* usr/include/mysql/
     bindgen_common >/bindings/bindings_mariadb_${version//./_}_x86_64_linux.rs
     bindgen_common -target i686-unknown-linux-gnu >/bindings/bindings_mariadb_${version//./_}_i686_linux.rs
     bindgen_common -target arm-unknown-linux-gnueabi >/bindings/bindings_mariadb_${version//./_}_arm_linux.rs
