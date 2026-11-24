@@ -9,8 +9,7 @@ pub const MARIADB_CLIENT_RESERVED_1: u64 = 8589934592;
 pub const MARIADB_CLIENT_STMT_BULK_OPERATIONS: u64 = 17179869184;
 pub const MARIADB_CLIENT_EXTENDED_METADATA: u64 = 34359738368;
 pub const MARIADB_CLIENT_CACHE_METADATA: u64 = 68719476736;
-pub const MARIADB_CLIENT_BULK_UNIT_RESULTS: u64 = 137438953472;
-pub const MARIADB_CLIENT_SUPPORTED_FLAGS: u64 = 261993005056;
+pub const MARIADB_CLIENT_SUPPORTED_FLAGS: u64 = 124554051584;
 pub const MYSQL_ERRMSG_SIZE: u32 = 512;
 pub const MYSQL50_TABLE_NAME_PREFIX: &[u8; 10] = b"#mysql50#\0";
 pub const MARIADB_CONNECTION_UNIXSOCKET: u32 = 0;
@@ -27,8 +26,8 @@ pub const MYSQL_PORT: u32 = 3306;
 pub const MYSQL_CONFIG_NAME: &[u8; 3] = b"my\0";
 pub const MYSQL_VERSION_ID: u32 = 100808;
 pub const MYSQL_SERVER_VERSION: &[u8; 15] = b"10.8.8-MariaDB\0";
-pub const MARIADB_PACKAGE_VERSION: &[u8; 6] = b"3.4.4\0";
-pub const MARIADB_PACKAGE_VERSION_ID: u32 = 30404;
+pub const MARIADB_PACKAGE_VERSION: &[u8; 7] = b"3.3.21\0";
+pub const MARIADB_PACKAGE_VERSION_ID: u32 = 30321;
 pub const MARIADB_SYSTEM_TYPE: &[u8; 6] = b"Linux\0";
 pub const MARIADB_MACHINE_TYPE: &[u8; 7] = b"x86_64\0";
 pub const MARIADB_PLUGINDIR: &[u8; 30] = b"/usr/local/lib/mariadb/plugin\0";
@@ -38,46 +37,12 @@ pub const MYSQL_WAIT_READ: u32 = 1;
 pub const MYSQL_WAIT_WRITE: u32 = 2;
 pub const MYSQL_WAIT_EXCEPT: u32 = 4;
 pub const MYSQL_WAIT_TIMEOUT: u32 = 8;
-pub const MARIADB_TLS_VERIFY_OK: u32 = 0;
-pub const MARIADB_TLS_VERIFY_TRUST: u32 = 1;
-pub const MARIADB_TLS_VERIFY_HOST: u32 = 2;
-pub const MARIADB_TLS_VERIFY_FINGERPRINT: u32 = 4;
-pub const MARIADB_TLS_VERIFY_PERIOD: u32 = 8;
-pub const MARIADB_TLS_VERIFY_REVOKED: u32 = 16;
-pub const MARIADB_TLS_VERIFY_UNKNOWN: u32 = 32;
-pub const MARIADB_TLS_VERIFY_ERROR: u32 = 128;
 pub const MYSQL_NO_DATA: u32 = 100;
 pub const MYSQL_DATA_TRUNCATED: u32 = 101;
+pub const MYSQL_DATA_MALFORMED: u32 = 102;
 pub const MYSQL_PS_SKIP_RESULT_W_LEN: i32 = -1;
 pub const MYSQL_PS_SKIP_RESULT_STR: i32 = -2;
 pub type va_list = __builtin_va_list;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct tm {
-    pub tm_sec: ::std::os::raw::c_int,
-    pub tm_min: ::std::os::raw::c_int,
-    pub tm_hour: ::std::os::raw::c_int,
-    pub tm_mday: ::std::os::raw::c_int,
-    pub tm_mon: ::std::os::raw::c_int,
-    pub tm_year: ::std::os::raw::c_int,
-    pub tm_wday: ::std::os::raw::c_int,
-    pub tm_yday: ::std::os::raw::c_int,
-    pub tm_isdst: ::std::os::raw::c_int,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of tm"][::std::mem::size_of::<tm>() - 36usize];
-    ["Alignment of tm"][::std::mem::align_of::<tm>() - 4usize];
-    ["Offset of field: tm::tm_sec"][::std::mem::offset_of!(tm, tm_sec) - 0usize];
-    ["Offset of field: tm::tm_min"][::std::mem::offset_of!(tm, tm_min) - 4usize];
-    ["Offset of field: tm::tm_hour"][::std::mem::offset_of!(tm, tm_hour) - 8usize];
-    ["Offset of field: tm::tm_mday"][::std::mem::offset_of!(tm, tm_mday) - 12usize];
-    ["Offset of field: tm::tm_mon"][::std::mem::offset_of!(tm, tm_mon) - 16usize];
-    ["Offset of field: tm::tm_year"][::std::mem::offset_of!(tm, tm_year) - 20usize];
-    ["Offset of field: tm::tm_wday"][::std::mem::offset_of!(tm, tm_wday) - 24usize];
-    ["Offset of field: tm::tm_yday"][::std::mem::offset_of!(tm, tm_yday) - 28usize];
-    ["Offset of field: tm::tm_isdst"][::std::mem::offset_of!(tm, tm_isdst) - 32usize];
-};
 pub type my_bool = ::std::os::raw::c_char;
 pub type my_ulonglong = ::std::os::raw::c_ulonglong;
 #[repr(u32)]
@@ -159,10 +124,10 @@ pub struct st_net {
     pub reading_or_writing: ::std::os::raw::c_uchar,
     pub save_char: ::std::os::raw::c_char,
     pub unused_1: ::std::os::raw::c_char,
-    pub tls_verify_status: ::std::os::raw::c_uchar,
-    pub compress: my_bool,
     pub unused_2: my_bool,
-    pub unused_3: *mut ::std::os::raw::c_char,
+    pub compress: my_bool,
+    pub unused_3: my_bool,
+    pub unused_4: *mut ::std::os::raw::c_void,
     pub last_errno: ::std::os::raw::c_uint,
     pub error: ::std::os::raw::c_uchar,
     pub unused_5: my_bool,
@@ -204,11 +169,10 @@ const _: () = {
         [::std::mem::offset_of!(st_net, reading_or_writing) - 76usize];
     ["Offset of field: st_net::save_char"][::std::mem::offset_of!(st_net, save_char) - 77usize];
     ["Offset of field: st_net::unused_1"][::std::mem::offset_of!(st_net, unused_1) - 78usize];
-    ["Offset of field: st_net::tls_verify_status"]
-        [::std::mem::offset_of!(st_net, tls_verify_status) - 79usize];
+    ["Offset of field: st_net::unused_2"][::std::mem::offset_of!(st_net, unused_2) - 79usize];
     ["Offset of field: st_net::compress"][::std::mem::offset_of!(st_net, compress) - 80usize];
-    ["Offset of field: st_net::unused_2"][::std::mem::offset_of!(st_net, unused_2) - 81usize];
-    ["Offset of field: st_net::unused_3"][::std::mem::offset_of!(st_net, unused_3) - 84usize];
+    ["Offset of field: st_net::unused_3"][::std::mem::offset_of!(st_net, unused_3) - 81usize];
+    ["Offset of field: st_net::unused_4"][::std::mem::offset_of!(st_net, unused_4) - 84usize];
     ["Offset of field: st_net::last_errno"][::std::mem::offset_of!(st_net, last_errno) - 88usize];
     ["Offset of field: st_net::error"][::std::mem::offset_of!(st_net, error) - 92usize];
     ["Offset of field: st_net::unused_5"][::std::mem::offset_of!(st_net, unused_5) - 93usize];
@@ -644,8 +608,6 @@ pub enum mysql_option {
     MARIADB_OPT_RPL_REGISTER_REPLICA = 7027,
     MARIADB_OPT_STATUS_CALLBACK = 7028,
     MARIADB_OPT_SERVER_PLUGINS = 7029,
-    MARIADB_OPT_BULK_UNIT_RESULTS = 7030,
-    MARIADB_OPT_TLS_VERIFICATION_CALLBACK = 7031,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -687,8 +649,6 @@ pub enum mariadb_value {
     MARIADB_CONNECTION_CLIENT_CAPABILITIES = 33,
     MARIADB_CONNECTION_BYTES_READ = 34,
     MARIADB_CONNECTION_BYTES_SENT = 35,
-    MARIADB_TLS_PEER_CERT_INFO = 36,
-    MARIADB_TLS_VERIFY_STATUS = 37,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -1145,7 +1105,6 @@ pub enum enum_stmt_attr_type {
     STMT_ATTR_CB_USER_DATA = 204,
     STMT_ATTR_CB_PARAM = 205,
     STMT_ATTR_CB_RESULT = 206,
-    STMT_ATTR_SQL_STATEMENT = 207,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -1319,6 +1278,7 @@ pub type mysql_stmt_fetch_row_func = ::std::option::Option<
     unsafe extern "C" fn(
         stmt: *mut MYSQL_STMT,
         row: *mut *mut ::std::os::raw::c_uchar,
+        length: *mut ::std::os::raw::c_ulong,
     ) -> ::std::os::raw::c_int,
 >;
 pub type ps_result_callback = ::std::option::Option<
@@ -1373,11 +1333,10 @@ pub struct st_mysql_stmt {
     pub result_callback: ps_result_callback,
     pub param_callback: ps_param_callback,
     pub request_length: usize,
-    pub sql: MARIADB_CONST_STRING,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql_stmt"][::std::mem::size_of::<st_mysql_stmt>() - 760usize];
+    ["Size of st_mysql_stmt"][::std::mem::size_of::<st_mysql_stmt>() - 752usize];
     ["Alignment of st_mysql_stmt"][::std::mem::align_of::<st_mysql_stmt>() - 8usize];
     ["Offset of field: st_mysql_stmt::mem_root"]
         [::std::mem::offset_of!(st_mysql_stmt, mem_root) - 0usize];
@@ -1448,7 +1407,6 @@ const _: () = {
         [::std::mem::offset_of!(st_mysql_stmt, param_callback) - 744usize];
     ["Offset of field: st_mysql_stmt::request_length"]
         [::std::mem::offset_of!(st_mysql_stmt, request_length) - 748usize];
-    ["Offset of field: st_mysql_stmt::sql"][::std::mem::offset_of!(st_mysql_stmt, sql) - 752usize];
 };
 pub type ps_field_fetch_func = ::std::option::Option<
     unsafe extern "C" fn(
@@ -1653,44 +1611,6 @@ const _: () = {
         [::std::mem::offset_of!(st_mysql_client_plugin, deinit) - 44usize];
     ["Offset of field: st_mysql_client_plugin::options"]
         [::std::mem::offset_of!(st_mysql_client_plugin, options) - 48usize];
-};
-#[repr(u32)]
-#[non_exhaustive]
-#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
-pub enum mariadb_tls_verification {
-    MARIADB_VERIFY_NONE = 0,
-    MARIADB_VERIFY_PIPE = 1,
-    MARIADB_VERIFY_UNIXSOCKET = 2,
-    MARIADB_VERIFY_LOCALHOST = 3,
-    MARIADB_VERIFY_FINGERPRINT = 4,
-    MARIADB_VERIFY_PEER_CERT = 5,
-}
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
-pub struct MARIADB_X509_INFO {
-    pub version: ::std::os::raw::c_int,
-    pub issuer: *mut ::std::os::raw::c_char,
-    pub subject: *mut ::std::os::raw::c_char,
-    pub fingerprint: [::std::os::raw::c_char; 129usize],
-    pub not_before: tm,
-    pub not_after: tm,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of MARIADB_X509_INFO"][::std::mem::size_of::<MARIADB_X509_INFO>() - 216usize];
-    ["Alignment of MARIADB_X509_INFO"][::std::mem::align_of::<MARIADB_X509_INFO>() - 4usize];
-    ["Offset of field: MARIADB_X509_INFO::version"]
-        [::std::mem::offset_of!(MARIADB_X509_INFO, version) - 0usize];
-    ["Offset of field: MARIADB_X509_INFO::issuer"]
-        [::std::mem::offset_of!(MARIADB_X509_INFO, issuer) - 4usize];
-    ["Offset of field: MARIADB_X509_INFO::subject"]
-        [::std::mem::offset_of!(MARIADB_X509_INFO, subject) - 8usize];
-    ["Offset of field: MARIADB_X509_INFO::fingerprint"]
-        [::std::mem::offset_of!(MARIADB_X509_INFO, fingerprint) - 12usize];
-    ["Offset of field: MARIADB_X509_INFO::not_before"]
-        [::std::mem::offset_of!(MARIADB_X509_INFO, not_before) - 144usize];
-    ["Offset of field: MARIADB_X509_INFO::not_after"]
-        [::std::mem::offset_of!(MARIADB_X509_INFO, not_after) - 180usize];
 };
 unsafe extern "C" {
     pub fn mysql_load_plugin(
@@ -3383,12 +3303,14 @@ pub struct st_mariadb_methods {
         unsafe extern "C" fn(
             stmt: *mut MYSQL_STMT,
             row: *mut *mut ::std::os::raw::c_uchar,
+            length: *mut ::std::os::raw::c_ulong,
         ) -> ::std::os::raw::c_int,
     >,
     pub db_stmt_fetch_to_bind: ::std::option::Option<
         unsafe extern "C" fn(
             stmt: *mut MYSQL_STMT,
             row: *mut ::std::os::raw::c_uchar,
+            length: ::std::os::raw::c_ulong,
         ) -> ::std::os::raw::c_int,
     >,
     pub db_stmt_flush_unbuffered:

@@ -25,8 +25,8 @@ pub const MYSQL_PORT: u32 = 3306;
 pub const MYSQL_CONFIG_NAME: &[u8; 3] = b"my\0";
 pub const MYSQL_VERSION_ID: u32 = 100808;
 pub const MYSQL_SERVER_VERSION: &[u8; 15] = b"10.8.8-MariaDB\0";
-pub const MARIADB_PACKAGE_VERSION: &[u8; 6] = b"3.4.4\0";
-pub const MARIADB_PACKAGE_VERSION_ID: u32 = 30404;
+pub const MARIADB_PACKAGE_VERSION: &[u8; 7] = b"3.4.11\0";
+pub const MARIADB_PACKAGE_VERSION_ID: u32 = 30411;
 pub const MARIADB_SYSTEM_TYPE: &[u8; 6] = b"Linux\0";
 pub const MARIADB_MACHINE_TYPE: &[u8; 7] = b"x86_64\0";
 pub const MARIADB_PLUGINDIR: &[u8; 30] = b"/usr/local/lib/mariadb/plugin\0";
@@ -46,9 +46,10 @@ pub const MARIADB_TLS_VERIFY_UNKNOWN: u32 = 32;
 pub const MARIADB_TLS_VERIFY_ERROR: u32 = 128;
 pub const MYSQL_NO_DATA: u32 = 100;
 pub const MYSQL_DATA_TRUNCATED: u32 = 101;
+pub const MYSQL_DATA_MALFORMED: u32 = 102;
 pub const MYSQL_PS_SKIP_RESULT_W_LEN: i32 = -1;
 pub const MYSQL_PS_SKIP_RESULT_STR: i32 = -2;
-pub type va_list = __builtin_va_list;
+pub type va_list = u32;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct tm {
@@ -263,6 +264,7 @@ pub enum enum_field_types {
     MYSQL_TYPE_TIMESTAMP2 = 17,
     MYSQL_TYPE_DATETIME2 = 18,
     MYSQL_TYPE_TIME2 = 19,
+    MYSQL_TYPE_VECTOR = 242,
     MYSQL_TYPE_JSON = 245,
     MYSQL_TYPE_NEWDECIMAL = 246,
     MYSQL_TYPE_ENUM = 247,
@@ -555,7 +557,7 @@ pub struct st_mysql_data {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of st_mysql_data"][::std::mem::size_of::<st_mysql_data>() - 56usize];
-    ["Alignment of st_mysql_data"][::std::mem::align_of::<st_mysql_data>() - 4usize];
+    ["Alignment of st_mysql_data"][::std::mem::align_of::<st_mysql_data>() - 8usize];
     ["Offset of field: st_mysql_data::data"][::std::mem::offset_of!(st_mysql_data, data) - 0usize];
     ["Offset of field: st_mysql_data::embedded_info"]
         [::std::mem::offset_of!(st_mysql_data, embedded_info) - 4usize];
@@ -649,6 +651,7 @@ pub enum mysql_option {
     MARIADB_OPT_SERVER_PLUGINS = 7029,
     MARIADB_OPT_BULK_UNIT_RESULTS = 7030,
     MARIADB_OPT_TLS_VERIFICATION_CALLBACK = 7031,
+    MARIADB_OPT_MAX_COLUMNS = 7032,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -913,8 +916,8 @@ pub struct st_mysql {
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mysql"][::std::mem::size_of::<st_mysql>() - 964usize];
-    ["Alignment of st_mysql"][::std::mem::align_of::<st_mysql>() - 4usize];
+    ["Size of st_mysql"][::std::mem::size_of::<st_mysql>() - 968usize];
+    ["Alignment of st_mysql"][::std::mem::align_of::<st_mysql>() - 8usize];
     ["Offset of field: st_mysql::net"][::std::mem::offset_of!(st_mysql, net) - 0usize];
     ["Offset of field: st_mysql::unused_0"][::std::mem::offset_of!(st_mysql, unused_0) - 620usize];
     ["Offset of field: st_mysql::host"][::std::mem::offset_of!(st_mysql, host) - 624usize];
@@ -999,7 +1002,7 @@ pub struct st_mysql_res {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of st_mysql_res"][::std::mem::size_of::<st_mysql_res>() - 80usize];
-    ["Alignment of st_mysql_res"][::std::mem::align_of::<st_mysql_res>() - 4usize];
+    ["Alignment of st_mysql_res"][::std::mem::align_of::<st_mysql_res>() - 8usize];
     ["Offset of field: st_mysql_res::row_count"]
         [::std::mem::offset_of!(st_mysql_res, row_count) - 0usize];
     ["Offset of field: st_mysql_res::field_count"]
@@ -1272,7 +1275,7 @@ const _: () = {
     ["Size of st_mysqlnd_upsert_result"]
         [::std::mem::size_of::<st_mysqlnd_upsert_result>() - 24usize];
     ["Alignment of st_mysqlnd_upsert_result"]
-        [::std::mem::align_of::<st_mysqlnd_upsert_result>() - 4usize];
+        [::std::mem::align_of::<st_mysqlnd_upsert_result>() - 8usize];
     ["Offset of field: st_mysqlnd_upsert_result::warning_count"]
         [::std::mem::offset_of!(st_mysqlnd_upsert_result, warning_count) - 0usize];
     ["Offset of field: st_mysqlnd_upsert_result::server_status"]
@@ -1322,6 +1325,7 @@ pub type mysql_stmt_fetch_row_func = ::std::option::Option<
     unsafe extern "C" fn(
         stmt: *mut MYSQL_STMT,
         row: *mut *mut ::std::os::raw::c_uchar,
+        length: *mut ::std::os::raw::c_ulong,
     ) -> ::std::os::raw::c_int,
 >;
 pub type ps_result_callback = ::std::option::Option<
@@ -1381,7 +1385,7 @@ pub struct st_mysql_stmt {
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
     ["Size of st_mysql_stmt"][::std::mem::size_of::<st_mysql_stmt>() - 760usize];
-    ["Alignment of st_mysql_stmt"][::std::mem::align_of::<st_mysql_stmt>() - 4usize];
+    ["Alignment of st_mysql_stmt"][::std::mem::align_of::<st_mysql_stmt>() - 8usize];
     ["Offset of field: st_mysql_stmt::mem_root"]
         [::std::mem::offset_of!(st_mysql_stmt, mem_root) - 0usize];
     ["Offset of field: st_mysql_stmt::mysql"]
@@ -3349,12 +3353,14 @@ pub struct st_mariadb_methods {
         unsafe extern "C" fn(
             stmt: *mut MYSQL_STMT,
             row: *mut *mut ::std::os::raw::c_uchar,
+            length: *mut ::std::os::raw::c_ulong,
         ) -> ::std::os::raw::c_int,
     >,
     pub db_stmt_fetch_to_bind: ::std::option::Option<
         unsafe extern "C" fn(
             stmt: *mut MYSQL_STMT,
             row: *mut ::std::os::raw::c_uchar,
+            length: ::std::os::raw::c_ulong,
         ) -> ::std::os::raw::c_int,
     >,
     pub db_stmt_flush_unbuffered:
@@ -3429,7 +3435,6 @@ const _: () = {
     ["Offset of field: st_mariadb_methods::db_execute_generate_request"]
         [::std::mem::offset_of!(st_mariadb_methods, db_execute_generate_request) - 80usize];
 };
-pub type __builtin_va_list = *mut ::std::os::raw::c_char;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
 pub struct st_mariadb_net_extension {

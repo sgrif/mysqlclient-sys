@@ -6,26 +6,25 @@ pub const MARIADB_CLIENT_PROGRESS: u64 = 4294967296;
 pub const MARIADB_CLIENT_RESERVED_1: u64 = 8589934592;
 pub const MARIADB_CLIENT_STMT_BULK_OPERATIONS: u64 = 17179869184;
 pub const MARIADB_CLIENT_EXTENDED_METADATA: u64 = 34359738368;
-pub const MARIADB_CLIENT_CACHE_METADATA: u64 = 68719476736;
-pub const MARIADB_CLIENT_SUPPORTED_FLAGS: u64 = 124554051584;
+pub const MARIADB_CLIENT_SUPPORTED_FLAGS: u64 = 55834574848;
 pub const MYSQL_ERRMSG_SIZE: u32 = 512;
 pub const MYSQL50_TABLE_NAME_PREFIX: &[u8; 10] = b"#mysql50#\0";
 pub const MARIADB_CONNECTION_UNIXSOCKET: u32 = 0;
 pub const MARIADB_CONNECTION_TCP: u32 = 1;
 pub const MARIADB_CONNECTION_NAMEDPIPE: u32 = 2;
 pub const MARIADB_CONNECTION_SHAREDMEM: u32 = 3;
-pub const MARIADB_CLIENT_VERSION_STR: &[u8; 7] = b"10.8.8\0";
-pub const MARIADB_BASE_VERSION: &[u8; 13] = b"mariadb-10.8\0";
-pub const MARIADB_VERSION_ID: u32 = 100808;
+pub const MARIADB_CLIENT_VERSION_STR: &[u8; 8] = b"10.5.20\0";
+pub const MARIADB_BASE_VERSION: &[u8; 13] = b"mariadb-10.5\0";
+pub const MARIADB_VERSION_ID: u32 = 100520;
 pub const MARIADB_PORT: u32 = 3306;
 pub const MARIADB_UNIX_ADDR: &[u8; 16] = b"/tmp/mysql.sock\0";
 pub const MYSQL_UNIX_ADDR: &[u8; 16] = b"/tmp/mysql.sock\0";
 pub const MYSQL_PORT: u32 = 3306;
 pub const MYSQL_CONFIG_NAME: &[u8; 3] = b"my\0";
-pub const MYSQL_VERSION_ID: u32 = 100808;
-pub const MYSQL_SERVER_VERSION: &[u8; 15] = b"10.8.8-MariaDB\0";
-pub const MARIADB_PACKAGE_VERSION: &[u8; 7] = b"3.3.14\0";
-pub const MARIADB_PACKAGE_VERSION_ID: u32 = 30314;
+pub const MYSQL_VERSION_ID: u32 = 100520;
+pub const MYSQL_SERVER_VERSION: &[u8; 16] = b"10.5.20-MariaDB\0";
+pub const MARIADB_PACKAGE_VERSION: &[u8; 7] = b"3.1.28\0";
+pub const MARIADB_PACKAGE_VERSION_ID: u32 = 30128;
 pub const MARIADB_SYSTEM_TYPE: &[u8; 6] = b"Linux\0";
 pub const MARIADB_MACHINE_TYPE: &[u8; 7] = b"x86_64\0";
 pub const MARIADB_PLUGINDIR: &[u8; 30] = b"/usr/local/lib/mariadb/plugin\0";
@@ -343,22 +342,6 @@ const _: () = {
 pub type MARIADB_CONST_STRING = st_ma_const_string;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct st_ma_const_data {
-    pub data: *const ::std::os::raw::c_uchar,
-    pub length: usize,
-}
-#[allow(clippy::unnecessary_operation, clippy::identity_op)]
-const _: () = {
-    ["Size of st_ma_const_data"][::std::mem::size_of::<st_ma_const_data>() - 8usize];
-    ["Alignment of st_ma_const_data"][::std::mem::align_of::<st_ma_const_data>() - 4usize];
-    ["Offset of field: st_ma_const_data::data"]
-        [::std::mem::offset_of!(st_ma_const_data, data) - 0usize];
-    ["Offset of field: st_ma_const_data::length"]
-        [::std::mem::offset_of!(st_ma_const_data, length) - 4usize];
-};
-pub type MARIADB_CONST_DATA = st_ma_const_data;
-#[repr(C)]
-#[derive(Debug, Copy, Clone)]
 pub struct st_ma_used_mem {
     pub next: *mut st_ma_used_mem,
     pub left: usize,
@@ -573,7 +556,6 @@ pub enum mysql_option {
     MYSQL_OPT_MAX_ALLOWED_PACKET = 39,
     MYSQL_OPT_NET_BUFFER_LENGTH = 40,
     MYSQL_OPT_TLS_VERSION = 41,
-    MYSQL_OPT_ZSTD_COMPRESSION_LEVEL = 42,
     MYSQL_PROGRESS_CALLBACK = 5999,
     MYSQL_OPT_NONBLOCK = 6000,
     MYSQL_DATABASE_DRIVER = 7000,
@@ -601,11 +583,6 @@ pub enum mysql_option {
     MARIADB_OPT_INTERACTIVE = 7022,
     MARIADB_OPT_PROXY_HEADER = 7023,
     MARIADB_OPT_IO_WAIT = 7024,
-    MARIADB_OPT_SKIP_READ_RESPONSE = 7025,
-    MARIADB_OPT_RESTRICTED_AUTH = 7026,
-    MARIADB_OPT_RPL_REGISTER_REPLICA = 7027,
-    MARIADB_OPT_STATUS_CALLBACK = 7028,
-    MARIADB_OPT_SERVER_PLUGINS = 7029,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -645,8 +622,6 @@ pub enum mariadb_value {
     MARIADB_CONNECTION_SERVER_CAPABILITIES = 31,
     MARIADB_CONNECTION_EXTENDED_SERVER_CAPABILITIES = 32,
     MARIADB_CONNECTION_CLIENT_CAPABILITIES = 33,
-    MARIADB_CONNECTION_BYTES_READ = 34,
-    MARIADB_CONNECTION_BYTES_SENT = 35,
 }
 #[repr(u32)]
 #[non_exhaustive]
@@ -1272,6 +1247,170 @@ const _: () = {
         [::std::mem::offset_of!(st_mysql_error_info, sqlstate) - 517usize];
 };
 pub type mysql_error_info = st_mysql_error_info;
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct st_mysqlnd_stmt_methods {
+    pub prepare: ::std::option::Option<
+        unsafe extern "C" fn(
+            stmt: *const MYSQL_STMT,
+            query: *const ::std::os::raw::c_char,
+            query_len: usize,
+        ) -> my_bool,
+    >,
+    pub execute: ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> my_bool>,
+    pub use_result:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *mut MYSQL_RES>,
+    pub store_result:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *mut MYSQL_RES>,
+    pub get_result:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *mut MYSQL_RES>,
+    pub free_result:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> my_bool>,
+    pub seek_data: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT, row: ::std::os::raw::c_ulonglong) -> my_bool,
+    >,
+    pub reset: ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> my_bool>,
+    pub close: ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> my_bool>,
+    pub dtor: ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> my_bool>,
+    pub fetch: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT, fetched_anything: *mut my_bool) -> my_bool,
+    >,
+    pub bind_param: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT, bind: MYSQL_BIND) -> my_bool,
+    >,
+    pub refresh_bind_param:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> my_bool>,
+    pub bind_result: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT, bind: *const MYSQL_BIND) -> my_bool,
+    >,
+    pub send_long_data: ::std::option::Option<
+        unsafe extern "C" fn(
+            stmt: *const MYSQL_STMT,
+            param_num: ::std::os::raw::c_uint,
+            data: *const ::std::os::raw::c_char,
+            length: usize,
+        ) -> my_bool,
+    >,
+    pub get_parameter_metadata:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *mut MYSQL_RES>,
+    pub get_result_metadata:
+        ::std::option::Option<unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *mut MYSQL_RES>,
+    pub get_last_insert_id: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_ulonglong,
+    >,
+    pub get_affected_rows: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_ulonglong,
+    >,
+    pub get_num_rows: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_ulonglong,
+    >,
+    pub get_param_count: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_uint,
+    >,
+    pub get_field_count: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_uint,
+    >,
+    pub get_warning_count: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_uint,
+    >,
+    pub get_error_no: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> ::std::os::raw::c_uint,
+    >,
+    pub get_error_str: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *const ::std::os::raw::c_char,
+    >,
+    pub get_sqlstate: ::std::option::Option<
+        unsafe extern "C" fn(stmt: *const MYSQL_STMT) -> *const ::std::os::raw::c_char,
+    >,
+    pub get_attribute: ::std::option::Option<
+        unsafe extern "C" fn(
+            stmt: *const MYSQL_STMT,
+            attr_type: enum_stmt_attr_type,
+            value: *const ::std::os::raw::c_void,
+        ) -> my_bool,
+    >,
+    pub set_attribute: ::std::option::Option<
+        unsafe extern "C" fn(
+            stmt: *const MYSQL_STMT,
+            attr_type: enum_stmt_attr_type,
+            value: *const ::std::os::raw::c_void,
+        ) -> my_bool,
+    >,
+    pub set_error: ::std::option::Option<
+        unsafe extern "C" fn(
+            stmt: *mut MYSQL_STMT,
+            error_nr: ::std::os::raw::c_uint,
+            sqlstate: *const ::std::os::raw::c_char,
+            format: *const ::std::os::raw::c_char,
+            ...
+        ),
+    >,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of st_mysqlnd_stmt_methods"]
+        [::std::mem::size_of::<st_mysqlnd_stmt_methods>() - 116usize];
+    ["Alignment of st_mysqlnd_stmt_methods"]
+        [::std::mem::align_of::<st_mysqlnd_stmt_methods>() - 4usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::prepare"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, prepare) - 0usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::execute"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, execute) - 4usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::use_result"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, use_result) - 8usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::store_result"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, store_result) - 12usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_result"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_result) - 16usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::free_result"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, free_result) - 20usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::seek_data"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, seek_data) - 24usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::reset"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, reset) - 28usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::close"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, close) - 32usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::dtor"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, dtor) - 36usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::fetch"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, fetch) - 40usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::bind_param"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, bind_param) - 44usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::refresh_bind_param"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, refresh_bind_param) - 48usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::bind_result"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, bind_result) - 52usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::send_long_data"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, send_long_data) - 56usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_parameter_metadata"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_parameter_metadata) - 60usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_result_metadata"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_result_metadata) - 64usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_last_insert_id"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_last_insert_id) - 68usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_affected_rows"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_affected_rows) - 72usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_num_rows"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_num_rows) - 76usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_param_count"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_param_count) - 80usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_field_count"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_field_count) - 84usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_warning_count"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_warning_count) - 88usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_error_no"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_error_no) - 92usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_error_str"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_error_str) - 96usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_sqlstate"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_sqlstate) - 100usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::get_attribute"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, get_attribute) - 104usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::set_attribute"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, set_attribute) - 108usize];
+    ["Offset of field: st_mysqlnd_stmt_methods::set_error"]
+        [::std::mem::offset_of!(st_mysqlnd_stmt_methods, set_error) - 112usize];
+};
 pub type mysql_stmt_fetch_row_func = ::std::option::Option<
     unsafe extern "C" fn(
         stmt: *mut MYSQL_STMT,
@@ -1290,7 +1429,7 @@ pub type ps_param_callback = ::std::option::Option<
         data: *mut ::std::os::raw::c_void,
         bind: *mut MYSQL_BIND,
         row_nr: ::std::os::raw::c_uint,
-    ) -> my_bool,
+    ) -> *mut my_bool,
 >;
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
@@ -1322,14 +1461,13 @@ pub struct st_mysql_stmt {
     pub fetch_row_func: mysql_stmt_fetch_row_func,
     pub execute_count: ::std::os::raw::c_uint,
     pub default_rset_handler: mysql_stmt_use_or_store_func,
-    pub request_buffer: *mut ::std::os::raw::c_uchar,
+    pub m: *mut st_mysqlnd_stmt_methods,
     pub array_size: ::std::os::raw::c_uint,
     pub row_size: usize,
     pub prebind_params: ::std::os::raw::c_uint,
     pub user_data: *mut ::std::os::raw::c_void,
     pub result_callback: ps_result_callback,
     pub param_callback: ps_param_callback,
-    pub request_length: usize,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
@@ -1388,8 +1526,7 @@ const _: () = {
         [::std::mem::offset_of!(st_mysql_stmt, execute_count) - 712usize];
     ["Offset of field: st_mysql_stmt::default_rset_handler"]
         [::std::mem::offset_of!(st_mysql_stmt, default_rset_handler) - 716usize];
-    ["Offset of field: st_mysql_stmt::request_buffer"]
-        [::std::mem::offset_of!(st_mysql_stmt, request_buffer) - 720usize];
+    ["Offset of field: st_mysql_stmt::m"][::std::mem::offset_of!(st_mysql_stmt, m) - 720usize];
     ["Offset of field: st_mysql_stmt::array_size"]
         [::std::mem::offset_of!(st_mysql_stmt, array_size) - 724usize];
     ["Offset of field: st_mysql_stmt::row_size"]
@@ -1402,8 +1539,6 @@ const _: () = {
         [::std::mem::offset_of!(st_mysql_stmt, result_callback) - 740usize];
     ["Offset of field: st_mysql_stmt::param_callback"]
         [::std::mem::offset_of!(st_mysql_stmt, param_callback) - 744usize];
-    ["Offset of field: st_mysql_stmt::request_length"]
-        [::std::mem::offset_of!(st_mysql_stmt, request_length) - 748usize];
 };
 pub type ps_field_fetch_func = ::std::option::Option<
     unsafe extern "C" fn(
@@ -3225,7 +3360,7 @@ pub struct st_mariadb_methods {
             command: enum_server_command,
             arg: *const ::std::os::raw::c_char,
             length: usize,
-            skip_check: my_bool,
+            skipp_check: my_bool,
             opt_arg: *mut ::std::os::raw::c_void,
         ) -> ::std::os::raw::c_int,
     >,
@@ -3286,19 +3421,10 @@ pub struct st_mariadb_methods {
         unsafe extern "C" fn(mysql: *mut MYSQL, function_name: *const ::std::os::raw::c_char),
     >,
     pub api: *mut st_mariadb_api,
-    pub db_read_execute_response:
-        ::std::option::Option<unsafe extern "C" fn(stmt: *mut MYSQL_STMT) -> ::std::os::raw::c_int>,
-    pub db_execute_generate_request: ::std::option::Option<
-        unsafe extern "C" fn(
-            stmt: *mut MYSQL_STMT,
-            request_len: *mut usize,
-            internal: my_bool,
-        ) -> *mut ::std::os::raw::c_uchar,
-    >,
 }
 #[allow(clippy::unnecessary_operation, clippy::identity_op)]
 const _: () = {
-    ["Size of st_mariadb_methods"][::std::mem::size_of::<st_mariadb_methods>() - 84usize];
+    ["Size of st_mariadb_methods"][::std::mem::size_of::<st_mariadb_methods>() - 76usize];
     ["Alignment of st_mariadb_methods"][::std::mem::align_of::<st_mariadb_methods>() - 4usize];
     ["Offset of field: st_mariadb_methods::db_connect"]
         [::std::mem::offset_of!(st_mariadb_methods, db_connect) - 0usize];
@@ -3338,10 +3464,6 @@ const _: () = {
         [::std::mem::offset_of!(st_mariadb_methods, invalidate_stmts) - 68usize];
     ["Offset of field: st_mariadb_methods::api"]
         [::std::mem::offset_of!(st_mariadb_methods, api) - 72usize];
-    ["Offset of field: st_mariadb_methods::db_read_execute_response"]
-        [::std::mem::offset_of!(st_mariadb_methods, db_read_execute_response) - 76usize];
-    ["Offset of field: st_mariadb_methods::db_execute_generate_request"]
-        [::std::mem::offset_of!(st_mariadb_methods, db_execute_generate_request) - 80usize];
 };
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]

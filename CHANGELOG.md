@@ -7,6 +7,8 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 * Detect the mysqlclient/libmariadb version from the installed headers instead of the shared library version reported by `pkg-config`. This fixes picking the wrong (or no) bindings on Fedora and other distributions
 * Add bindings for mysqlclient 9.6, 9.7, 26.7, 26.10
+* Update the libmariadb bindings to the latest patch releases (3.1.28, 3.3.21, 3.4.11). This adds support for the `MYSQL_TYPE_VECTOR` column type and the `MARIADB_OPT_MAX_COLUMNS` option
+* Support specifying MariaDB 12.x and 13.x server versions via `MYSQLCLIENT_VERSION`
 * Update the bundled libmysqlclient version (`mysqlclient-src`) to 26.10.0
 
 ## [0.2.3] 2026-11-12

@@ -290,9 +290,9 @@ impl MysqlVersion {
             MysqlVersion::Mysql97 => "9_7_4",
             MysqlVersion::Mysql267 => "26_7_0",
             MysqlVersion::Mysql2610 => "26_10_0",
-            MysqlVersion::MariaDb31 => "mariadb_3_1_27",
-            MysqlVersion::MariaDb33 => "mariadb_3_3_14",
-            MysqlVersion::MariaDb34 => "mariadb_3_4_4",
+            MysqlVersion::MariaDb31 => "mariadb_3_1_28",
+            MysqlVersion::MariaDb33 => "mariadb_3_3_21",
+            MysqlVersion::MariaDb34 => "mariadb_3_4_11",
         }
     }
 
@@ -333,6 +333,8 @@ impl MysqlVersion {
         // * mariadb version 11.6.x -> 3.4.x
         // * mariadb version 11.7.x -> 3.4.x
         // * mariadb version 11.8.x -> 3.4.x
+        // * mariadb version 12.x -> 3.4.x
+        // * mariadb version 13.x -> 3.4.x
         if version.starts_with("5.7") || version.starts_with("20.") || version == "20" {
             Some(Self::Mysql5)
         } else if version.starts_with("8.0") || version.starts_with("21.") || version == "21" {
@@ -376,7 +378,11 @@ impl MysqlVersion {
             || match_semver(">=10.6.0, <11.4.0", version)
         {
             Some(Self::MariaDb33)
-        } else if version.starts_with("3.4") || version.starts_with("11") {
+        } else if version.starts_with("3.4")
+            || version.starts_with("11")
+            || version.starts_with("12")
+            || version.starts_with("13")
+        {
             Some(Self::MariaDb34)
         } else {
             None
