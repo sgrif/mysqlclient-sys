@@ -9,3 +9,6 @@ Bindings were generated with the following steps:
 
 * Add the possiblity to statically link openssl: https://github.com/mysql/mysql-server/commit/4433b1cbbec301e2141210ee6d19532c4e01d95f
 * Revert the removal of the native_password login method: https://github.com/mysql/mysql-server/commit/e1c697a05e4b21f29126dbab3891ae1d8519e113 
+  * Since MySQL 9.6 (WL#16956) this also requires restoring `include/sha1.h` and `mysys/my_sha1.cc`
+* Allow building only the client library (`WITHOUT_SERVER`) without server dependencies (editline, rpc)
+* Disable a broken zstd cmake option

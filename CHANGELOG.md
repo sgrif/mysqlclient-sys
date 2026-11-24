@@ -6,7 +6,8 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 ## Unreleased
 
 * Detect the mysqlclient/libmariadb version from the installed headers instead of the shared library version reported by `pkg-config`. This fixes picking the wrong (or no) bindings on Fedora and other distributions
-* Add bindings for mysqlclient 9.6 and 9.7
+* Add bindings for mysqlclient 9.6, 9.7, 26.7, 26.10
+* Update the bundled libmysqlclient version (`mysqlclient-src`) to 26.10.0
 
 ## [0.2.3] 2026-11-12
 

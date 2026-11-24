@@ -21,7 +21,7 @@ fn main() {
     }
 
     if cfg!(feature = "bundled") {
-        parse_version("9.5.0");
+        parse_version("26.10.0");
         return;
     }
     let target = std::env::var("TARGET")
@@ -215,6 +215,8 @@ enum MysqlVersion {
     Mysql95,
     Mysql96,
     Mysql97,
+    Mysql267,
+    Mysql2610,
     MariaDb31,
     MariaDb33,
     MariaDb34,
@@ -237,6 +239,8 @@ impl MysqlVersion {
         Self::Mysql95,
         Self::Mysql96,
         Self::Mysql97,
+        Self::Mysql267,
+        Self::Mysql2610,
         Self::MariaDb31,
         Self::MariaDb33,
         Self::MariaDb34,
@@ -259,6 +263,8 @@ impl MysqlVersion {
             MysqlVersion::Mysql95 => "mysql_9_5_x",
             MysqlVersion::Mysql96 => "mysql_9_6_x",
             MysqlVersion::Mysql97 => "mysql_9_7_x",
+            MysqlVersion::Mysql267 => "mysql_26_7_x",
+            MysqlVersion::Mysql2610 => "mysql_26_10_x",
             MysqlVersion::MariaDb31 => "mariadb_3_1_x",
             MysqlVersion::MariaDb33 => "mariadb_3_3_x",
             MysqlVersion::MariaDb34 => "mariadb_3_4_x",
@@ -282,6 +288,8 @@ impl MysqlVersion {
             MysqlVersion::Mysql95 => "9_5_0",
             MysqlVersion::Mysql96 => "9_6_0",
             MysqlVersion::Mysql97 => "9_7_4",
+            MysqlVersion::Mysql267 => "26_7_0",
+            MysqlVersion::Mysql2610 => "26_10_0",
             MysqlVersion::MariaDb31 => "mariadb_3_1_27",
             MysqlVersion::MariaDb33 => "mariadb_3_3_14",
             MysqlVersion::MariaDb34 => "mariadb_3_4_4",
@@ -295,7 +303,7 @@ impl MysqlVersion {
         // libmysqlclient21 -> 8.0.x
         // libmysqlclient22 -> 8.2.x
         // libmysqlclient23 -> 8.3.0
-        // libmysqlclient24 -> 8.4.0 or 9.0 or 9.1 or 9.2
+        // libmysqlclient24 -> 8.4.0 or 9.x or 26.x
         // Linux version becomes the full SONAME like 21.3.2 but MacOS is just the
         // major version.
         //
@@ -357,6 +365,10 @@ impl MysqlVersion {
             Some(Self::Mysql96)
         } else if version.starts_with("9.7") {
             Some(Self::Mysql97)
+        } else if version.starts_with("26.7") {
+            Some(Self::Mysql267)
+        } else if version.starts_with("26.10") {
+            Some(Self::Mysql2610)
         } else if version.starts_with("3.1") || match_semver(">=10.2.0, <10.6.0", version) {
             Some(Self::MariaDb31)
         } else if version.starts_with("3.2")
@@ -388,6 +400,8 @@ impl MysqlVersion {
             MysqlVersion::Mysql95 => "MySQL 9.5.x",
             MysqlVersion::Mysql96 => "MySQL 9.6.x",
             MysqlVersion::Mysql97 => "MySQL 9.7.x",
+            MysqlVersion::Mysql267 => "MySQL 26.7.x",
+            MysqlVersion::Mysql2610 => "MySQL 26.10.x",
             MysqlVersion::MariaDb31 => "MariaDB 3.1.x",
             MysqlVersion::MariaDb33 => "MariaDB 3.3.x",
             MysqlVersion::MariaDb34 => "MariaDB 3.4.x",
