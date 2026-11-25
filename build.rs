@@ -245,7 +245,13 @@ impl MysqlVersion {
         Self::MariaDb33,
         Self::MariaDb34,
     ];
-
+    /// Is MariaDB
+    fn ismariadb(&self) -> bool {
+        match self {
+            Self::MariaDb31 | Self::MariaDb33 | Self::MariaDb34 => true,
+            _ => false,
+        }
+    }
     /// Retrieves the configuration [`str`] that represents the version.
     fn as_cfg(&self) -> &'static str {
         match self {
@@ -448,6 +454,9 @@ fn parse_version(version_str: &str) {
     bindings_target.push("bindings.rs");
 
     if let Some(version) = version {
+        if version.ismariadb() {
+            println!("cargo::metadata=mariadb=1");
+        }
         println!("cargo:rustc-cfg={}", version.as_cfg());
         if buildtime_bindgen {
             return;
