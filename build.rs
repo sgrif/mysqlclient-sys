@@ -249,7 +249,22 @@ impl MysqlVersion {
     fn ismariadb(&self) -> bool {
         match self {
             Self::MariaDb31 | Self::MariaDb33 | Self::MariaDb34 => true,
-            _ => false,
+            Self::Mysql5
+            | Self::Mysql80
+            | Self::Mysql81
+            | Self::Mysql82
+            | Self::Mysql83
+            | Self::Mysql84
+            | Self::Mysql90
+            | Self::Mysql91
+            | Self::Mysql92
+            | Self::Mysql93
+            | Self::Mysql94
+            | Self::Mysql95
+            | Self::Mysql96
+            | Self::Mysql97
+            | Self::Mysql267
+            | Self::Mysql2610 => false,
         }
     }
     /// Retrieves the configuration [`str`] that represents the version.
@@ -455,7 +470,9 @@ fn parse_version(version_str: &str) {
 
     if let Some(version) = version {
         if version.ismariadb() {
-            println!("cargo::metadata=mariadb=1");
+            println!("cargo::metadata=libmariadb=1");
+        } else {
+            println!("cargo::metadata=libmariadb=0");
         }
         println!("cargo:rustc-cfg={}", version.as_cfg());
         if buildtime_bindgen {
