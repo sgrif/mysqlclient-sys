@@ -3,6 +3,10 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.5.5] 2026-11-26
+
+* Propagate if libmariadb is linked to dependencies via `DEP_MYSQLCLIENT_MARIADB`
+
 ## [0.5.4] 2026-11-24
 
 * Detect the mysqlclient/libmariadb version from the installed headers instead of the shared library version reported by `pkg-config`. This fixes picking the wrong (or no) bindings on Fedora and other distributions
